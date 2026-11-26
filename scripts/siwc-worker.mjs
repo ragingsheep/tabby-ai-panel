@@ -12,7 +12,7 @@ function dpapi (encrypt, value) {
     const result = execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], { input: Buffer.from(value).toString('base64'), encoding: 'utf8', windowsHide: true, maxBuffer: 8*1024*1024, timeout: 30000, stdio: ['pipe','pipe','pipe'] })
     return Buffer.from(result.trim(), 'base64')
 }
-const client = createChatGPT({ appName: 'Tabby AI Panel (ChatGPT preview)', appId: 'tabby-ai-panel-siwc', redirectPort: 0, storageDir: join(process.env.LOCALAPPDATA || homedir(), 'Tabby AI Panel', 'chatgpt-auth'), credentialEncryption: { id: 'windows-dpapi-current-user-v1', isAvailable: available, encrypt: text => dpapi(true, Buffer.from(text,'utf8')), decrypt: bytes => dpapi(false, bytes).toString('utf8') } })
+const client = createChatGPT({ appName: 'Tabby AI Panel-oAIsub (ChatGPT preview)', appId: 'tabby-ai-panel-siwc', redirectPort: 0, storageDir: join(process.env.LOCALAPPDATA || homedir(), 'Tabby AI Panel', 'chatgpt-auth'), credentialEncryption: { id: 'windows-dpapi-current-user-v1', isAvailable: available, encrypt: text => dpapi(true, Buffer.from(text,'utf8')), decrypt: bytes => dpapi(false, bytes).toString('utf8') } })
 const send = (type, value) => process.stdout.write(JSON.stringify({type, value})+'\n')
 const controller = new AbortController()
 let started = false

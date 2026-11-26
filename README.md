@@ -1,17 +1,17 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/giejqf/tabby-ai-panel/main/docs/assets/logo.svg" width="112" height="112" alt="Tabby AI Panel logo">
+<img src="https://raw.githubusercontent.com/ragingsheep/tabby-ai-panel/feature/native-chatgpt-signin/docs/assets/logo.svg" width="112" height="112" alt="Tabby AI Panel-oAIsub logo">
 
-# Tabby AI Panel
+# Tabby AI Panel-oAIsub
 
 **An autonomous AI agent for the [Tabby](https://tabby.sh) terminal that works across all your tabs.**<br>
 Local shells and SSH sessions on different machines, with persistent sessions and commands you approve.
 
-<a href="https://www.npmjs.com/package/tabby-ai-panel"><img src="https://raw.githubusercontent.com/giejqf/tabby-ai-panel/main/docs/assets/badges/npm.svg" alt="npm version"></a>
-<a href="https://tabby.sh"><img src="https://raw.githubusercontent.com/giejqf/tabby-ai-panel/main/docs/assets/badges/tabby.svg" alt="Tabby plugin"></a>
-<a href="docs/getting-started.md#connect-a-model"><img src="https://raw.githubusercontent.com/giejqf/tabby-ai-panel/main/docs/assets/badges/api.svg" alt="Works with OpenAI-compatible APIs"></a>
-<a href="docs/development.md#unit-tests"><img src="https://raw.githubusercontent.com/giejqf/tabby-ai-panel/main/docs/assets/badges/tests.svg" alt="Unit tests"></a>
-<a href="LICENSE"><img src="https://raw.githubusercontent.com/giejqf/tabby-ai-panel/main/docs/assets/badges/license.svg" alt="MIT license"></a>
+<a href="https://github.com/ragingsheep/tabby-ai-panel/actions"><img src="https://raw.githubusercontent.com/ragingsheep/tabby-ai-panel/feature/native-chatgpt-signin/docs/assets/badges/npm.svg" alt="Build version"></a>
+<a href="https://tabby.sh"><img src="https://raw.githubusercontent.com/ragingsheep/tabby-ai-panel/feature/native-chatgpt-signin/docs/assets/badges/tabby.svg" alt="Tabby plugin"></a>
+<a href="docs/getting-started.md#connect-a-model"><img src="https://raw.githubusercontent.com/ragingsheep/tabby-ai-panel/feature/native-chatgpt-signin/docs/assets/badges/api.svg" alt="Works with OpenAI-compatible APIs"></a>
+<a href="docs/development.md#unit-tests"><img src="https://raw.githubusercontent.com/ragingsheep/tabby-ai-panel/feature/native-chatgpt-signin/docs/assets/badges/tests.svg" alt="Unit tests"></a>
+<a href="LICENSE"><img src="https://raw.githubusercontent.com/ragingsheep/tabby-ai-panel/feature/native-chatgpt-signin/docs/assets/badges/license.svg" alt="MIT license"></a>
 
 [Getting started](docs/getting-started.md) · [Documentation](docs/README.md) · [Changelog](CHANGELOG.md)
 
@@ -20,7 +20,7 @@ Local shells and SSH sessions on different machines, with persistent sessions an
 <br>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/giejqf/tabby-ai-panel/main/docs/screenshot.png" alt="The AI panel next to a terminal: the agent compared two hosts and is waiting for approval to run sudo apt-get update on Linux-1">
+  <img src="https://raw.githubusercontent.com/ragingsheep/tabby-ai-panel/feature/native-chatgpt-signin/docs/screenshot.png" alt="The AI panel next to a terminal: the agent compared two hosts and is waiting for approval to run sudo apt-get update on Linux-1">
 </p>
 
 Ask for something like *"set up a WireGuard tunnel between @Linux-1 and @Linux-2"*. The agent inspects both hosts, makes a plan, runs commands in the right tabs, reads the results, fixes problems, and verifies the tunnel from both sides. You approve each step, or decide which kinds of steps it may take on its own.
@@ -36,9 +36,9 @@ Ask for something like *"set up a WireGuard tunnel between @Linux-1 and @Linux-2
 
 ## Quick start
 
-1. **Install**: in Tabby, open **Settings → Plugins**, search for `ai-panel`, click **Get**, and restart Tabby.
-2. **Connect a model**: in **Settings → AI Panel**, enter your endpoint (for example `https://openrouter.ai/api` or `http://localhost:11434`) and API key, pick a model that supports tool calling, and click **Test**.
-3. **Ask**: open the panel with the **AI Agent** toolbar button or `Ctrl+Alt+A` (`⌘⇧A` on macOS), mention a terminal with `@`, and press `Enter`.
+1. **Install**: download the latest successful Windows artifact from [GitHub Actions](https://github.com/ragingsheep/tabby-ai-panel/actions), close Tabby and extract it into your plugins directory. See [installation instructions](docs/chatgpt-signin.md).
+2. **Connect a model**: in **Settings → AI Panel-oAIsub**, choose ChatGPT subscription (preview) and sign in, or configure an OpenAI-compatible endpoint. Select a model and click **Test**.
+3. **Ask**: open the panel with the **AI Agent-oAIsub** toolbar button or `Ctrl+Alt+Shift+A` (`⌘Alt⇧A` on macOS), mention a terminal with `@`, and press `Enter`.
 
 Other ways to install (zip, from source) and endpoint examples are in [Getting started](docs/getting-started.md).
 

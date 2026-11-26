@@ -13,7 +13,7 @@ import { findHotkey } from '../../core/util/keystroke'
 const PANEL_HOTKEY_IDS = Object.values(HOTKEY_IDS)
 
 @Component({
-    selector: 'ai-panel',
+    selector: 'ai-panel-oaisub',
     templateUrl: './panel.component.html',
     styleUrls: ['./panel.component.scss'],
 })
@@ -158,7 +158,7 @@ export class AiPanelComponent implements OnInit, OnDestroy {
     }
 
     openSettings (): void {
-        this.app.openNewTabRaw({ type: SettingsTabComponent, inputs: { activeTab: 'ai-panel' } })
+        this.app.openNewTabRaw({ type: SettingsTabComponent, inputs: { activeTab: 'ai-panel-oaisub' } })
     }
 
     openDataFolder (): void {

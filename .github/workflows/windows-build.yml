@@ -43,7 +43,7 @@ jobs:
           if ((Get-FileHash "$env:RUNNER_TEMP/$archive" -Algorithm SHA256).Hash -ne $expected) { throw 'Node checksum mismatch' }
           Expand-Archive "$env:RUNNER_TEMP/$archive" "$env:RUNNER_TEMP/node-portable"
           $nodeDir = "$env:RUNNER_TEMP/node-portable/node-$version-win-x64"
-          $plugin = 'stage/tabby-ai-panel'
+          $plugin = 'stage/tabby-ai-panel-oaisub'
           New-Item -ItemType Directory -Force "$plugin/dist" | Out-Null
           Copy-Item dist/* "$plugin/dist" -Recurse
           Copy-Item "$nodeDir/node.exe" "$plugin/dist/node.exe"
@@ -55,7 +55,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Worker syntax validation failed' }
       - uses: actions/upload-artifact@v5
         with:
-          name: tabby-ai-panel-siwc-windows-x64
+          name: tabby-ai-panel-oaisub-windows-x64
           path: stage/
           if-no-files-found: error
           retention-days: 30

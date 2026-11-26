@@ -5,9 +5,9 @@ import { AiPanelSettingsComponent } from './ui/settings/settings.component'
 /** @hidden */
 @Injectable()
 export class AiPanelSettingsTabProvider extends SettingsTabProvider {
-    id = 'ai-panel'
+    id = 'ai-panel-oaisub'
     icon = 'robot'
-    title = 'AI Panel'
+    title = 'AI Panel-oAIsub'
 
     getComponentType (): any {
         return AiPanelSettingsComponent

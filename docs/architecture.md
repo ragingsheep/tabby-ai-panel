@@ -33,7 +33,7 @@ flowchart LR
     Tabs -- attach / detach --> Decorator
     Runner -- "read buffer / sendInput" --> Tabs
     Provider -- "HTTP + SSE" --> LLM[(LLM endpoint)]
-    Store -- JSON files --> Disk[(ai-panel/sessions)]
+    Store -- JSON files --> Disk[(ai-panel-oaisub/sessions)]
 ```
 
 1. You send a message. `AgentService` adds it to the session, together with a snapshot of the open terminals.
@@ -45,7 +45,7 @@ flowchart LR
 
 ```text
 src/
-├── index.ts                    NgModule: registers providers, components; exposes window.tabbyAiPanel
+├── index.ts                    NgModule: registers providers, components; exposes window.tabbyAiPanelOaiSub
 ├── config.ts, hotkeys.ts       ConfigProvider (defaults + hotkey bindings), HotkeyProvider
 ├── commands.ts                 Toolbar button (CommandProvider)
 ├── settings-tab.ts             Settings tab (SettingsTabProvider)
@@ -75,13 +75,13 @@ The plugin is a standard Tabby plugin: an npm package with the `tabby-plugin` ke
 
 | Provider | Used for |
 | --- | --- |
-| `ConfigProvider` | `aiPanel` defaults and default hotkey bindings, with macOS variants |
+| `ConfigProvider` | `aiPanelOaiSub` defaults and default hotkey bindings, with macOS variants |
 | `HotkeyProvider` | The panel hotkeys shown in **Settings → Hotkeys** |
-| `CommandProvider` | The **AI Agent** toolbar button |
-| `SettingsTabProvider` | **Settings → AI Panel** |
+| `CommandProvider` | The **AI Agent-oAIsub** toolbar button |
+| `SettingsTabProvider` | **Settings → AI Panel-oAIsub** |
 | `TerminalDecorator` | A hook that is called for every terminal tab, so the registry knows about it |
 
-Tabby has no sidebar API, so `PanelHostService` creates the panel component itself and mounts it inside the element that holds the tab bodies. A CSS rule narrows the tab bodies by `--ai-panel-width`, so the tab bar keeps its full width. If that element cannot be found, the panel falls back to a fixed overlay. Hotkeys are dispatched from Tabby's `HotkeysService`, and also matched by the panel itself while it has focus, because Tabby's hotkeys are suspended then.
+Tabby has no sidebar API, so `PanelHostService` creates the panel component itself and mounts it inside the element that holds the tab bodies. A CSS rule narrows the tab bodies by `--ai-panel-oaisub-width`, so the tab bar keeps its full width. If that element cannot be found, the panel falls back to a fixed overlay. Hotkeys are dispatched from Tabby's `HotkeysService`, and also matched by the panel itself while it has focus, because Tabby's hotkeys are suspended then.
 
 Tabby's renderer has Node.js integration. The plugin relies on that for `fs` (sessions) and `http`/`https` (the LLM client).
 
@@ -155,7 +155,7 @@ Tool results are cut to `maxToolResultChars` (head + tail). `fitContextBudget()`
 
 ## Persistence
 
-`SessionStoreService` writes `<config dir>/ai-panel/sessions/<id>.json` plus `index.json`. Writes are queued and coalesced (400 ms), done atomically (temporary file, then rename), and flushed on `beforeunload`. A missing or corrupt index is rebuilt by scanning the session files. Loading goes through a `migrate()` hook, ready for future schema versions. See [Sessions](sessions.md) for the format.
+`SessionStoreService` writes `<config dir>/ai-panel-oaisub/sessions/<id>.json` plus `index.json`. Writes are queued and coalesced (400 ms), done atomically (temporary file, then rename), and flushed on `beforeunload`. A missing or corrupt index is rebuilt by scanning the session files. Loading goes through a `migrate()` hook, ready for future schema versions. See [Sessions](sessions.md) for the format.
 
 ## UI
 
@@ -170,8 +170,8 @@ Angular 15 components that use Tabby's theme variables:
 | `ComposerComponent` | Input, @-mentions, approval mode, token count, model switcher |
 | `SessionListComponent` | The session drawer |
 | `ModelPickerComponent` | Searchable model dropdown, used in settings and the composer |
-| `AiPanelSettingsComponent` | **Settings → AI Panel** |
+| `AiPanelSettingsComponent` | **Settings → AI Panel-oAIsub** |
 
 `AgentService.state$` emits a new state at most about 25 times a second while streaming, and the components render from it.
 
-For debugging, the module exposes `window.tabbyAiPanel = { host, agent, registry }` in the renderer. See [Development](development.md#debugging).
+For debugging, the module exposes `window.tabbyAiPanelOaiSub = { host, agent, registry }` in the renderer. See [Development](development.md#debugging).

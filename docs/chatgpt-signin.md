@@ -6,9 +6,9 @@ This Windows-only preview uses the official OpenAI Sign in with ChatGPT DevKit a
 
 ### Prebuilt Windows x64 artifact
 
-Open the [Windows build runs](https://github.com/ragingsheep/tabby-ai-panel/actions), select the latest successful build for `feature/native-chatgpt-signin` and download `tabby-ai-panel-siwc-windows-x64` under Artifacts. This package includes portable Node.js, so Git, npm and a system Node installation are not required. Windows PowerShell 5.1 is needed for credential encryption.
+Open the [Windows build runs](https://github.com/ragingsheep/tabby-ai-panel/actions), select the latest successful build for `feature/native-chatgpt-signin` and download `tabby-ai-panel-oaisub-windows-x64` under Artifacts. This package includes portable Node.js, so Git, npm and a system Node installation are not required. Windows PowerShell 5.1 is needed for credential encryption.
 
-Close Tabby, back up any existing plugin and extract the ZIP into `%APPDATA%/tabby/plugins/node_modules/` so that `tabby-ai-panel/package.json` and `tabby-ai-panel/dist/index.js` exist. Restart Tabby.
+Close Tabby. Back up and remove or disable the previous subscription-preview plugin. You can retain the original upstream plugin separately. Extract the ZIP into `%APPDATA%/tabby/plugins/node_modules/` so that `tabby-ai-panel-oaisub/package.json` and `tabby-ai-panel-oaisub/dist/index.js` exist. Restart Tabby.
 
 ### Building from source
 
@@ -20,11 +20,11 @@ Requires Git, Windows PowerShell 5.1 and Node.js 22.12+ on PATH (including when 
     npm run build
     npm pack
 
-The build clones the official DevKit, applies application-specific agent input/tool options to its streaming implementation and bundles a local worker. Review the DevKit's separate license before redistribution; the preview is for personal, noncommercial use. The expected package is tabby-ai-panel-0.1.5-siwc.0.tgz.
+The build clones the official DevKit, applies application-specific agent input/tool options to its streaming implementation and bundles a local worker. Review the DevKit's separate license before redistribution; the preview is for personal, noncommercial use. The expected package is tabby-ai-panel-oaisub-0.1.5-siwc.0.tgz.
 
-Close Tabby. Back up the existing plugin and config. Extract the tarball into %APPDATA%/tabby/plugins/node_modules/tabby-ai-panel with package.json and dist directly inside that directory (not nested in package). Keep backups outside node_modules. Restart Tabby.
+Close Tabby. Back up the existing plugin and config. Extract the tarball into %APPDATA%/tabby/plugins/node_modules/tabby-ai-panel-oaisub with package.json and dist directly inside that directory (not nested in package). Keep backups outside node_modules. Restart Tabby.
 
-Open Settings > AI Panel > AI provider > ChatGPT subscription (preview). Sign in through your browser, grant consent, choose an available model and click Test. Test checks model discovery. Keep approval set to Ask for every action.
+Open Settings > AI Panel-oAIsub > AI provider > ChatGPT subscription (preview). Sign in through your browser, grant consent, choose an available model and click Test. Test checks model discovery. Keep approval set to Ask for every action.
 
 Start a fresh session on a nonprivileged terminal. Ask for a hello message, then a read-only echo command. Reject the first command, approve the next, check output and Stop. Restart Tabby, verify persistent sign-in, then test sign-out and switching accounts. Check the original local/API-key provider as well.
 
@@ -38,4 +38,4 @@ Official docs: https://developers.openai.com/siwc/quickstart and https://github.
 
 ## Troubleshooting browser sign-in
 
-After browser consent, Tabby must show a connected account with plan usage enabled. Use **Refresh account status** to reload the saved connection without opening the browser. If the earlier preview appeared stuck, fully exit Tabby before replacing the plugin. The saved account is stored outside the plugin and is retained on update. Do not share authentication URLs, OAuth codes, tokens or credential files when reporting problems. Share only the displayed error text or whether the browser reached the Return to your app page.
+After browser consent, Tabby must show a connected account with plan usage enabled. Use **Refresh account status** to reload the saved connection without opening the browser. If the earlier preview appeared stuck, fully exit Tabby before replacing the plugin. The saved ChatGPT account is stored outside the plugin and is retained on update. The renamed plugin has its own settings and session directory; the old plugin's settings and sessions are not automatically migrated. Close or disable the old panel before opening the renamed panel; simultaneous sidebar layout is not supported. Do not share authentication URLs, OAuth codes, tokens or credential files when reporting problems. Share only the displayed error text or whether the browser reached the Return to your app page.

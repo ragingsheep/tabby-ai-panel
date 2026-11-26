@@ -13,7 +13,7 @@ For the session drawer itself (search, rename, delete), see [Using the panel](us
 
 - **Saving.** Changes are written after every step, coalesced over about 400 ms, and flushed when the window closes. Files are written atomically: to a temporary file first, then renamed.
 - **Title.** With **Name sessions automatically** on, the first line of your first message becomes the title (up to 60 characters). Rename a session by double-clicking its title in the header or in the drawer. A name you set is never overwritten.
-- **New session.** **+** in the header, **New** in the drawer, or `Ctrl+Alt+N`. Starting or opening another session first stops a running turn.
+- **New session.** **+** in the header, **New** in the drawer, or `Ctrl+Alt+Shift+N`. Starting or opening another session first stops a running turn.
 - **Deleting** a session removes its file. It cannot be undone.
 
 ## Resuming and re-attaching terminals
@@ -45,7 +45,7 @@ Click a closed chip to reopen its profile and attach it to the same key. The age
 Sessions live next to Tabby's config file:
 
 ```text
-<Tabby config dir>/ai-panel/
+<Tabby config dir>/ai-panel-oaisub/
 ├── index.json              # summaries for the drawer (title, preview, terminals, dates)
 └── sessions/
     ├── s_mfl2x9k01a3.json
@@ -54,11 +54,11 @@ Sessions live next to Tabby's config file:
 
 | OS | Default location |
 | --- | --- |
-| Linux | `~/.config/tabby/ai-panel/` |
-| macOS | `~/Library/Application Support/tabby/ai-panel/` |
-| Windows | `%APPDATA%\tabby\ai-panel\` |
+| Linux | `~/.config/tabby/ai-panel-oaisub/` |
+| macOS | `~/Library/Application Support/tabby/ai-panel-oaisub/` |
+| Windows | `%APPDATA%\tabby\ai-panel-oaisub\` |
 
-If Tabby does not report a config path, `~/.tabby-ai-panel/` is used instead. **Settings → AI Panel** shows the folder in use and has an **Open folder** button. So does the bottom of the session drawer.
+If Tabby does not report a config path, `~/.tabby-ai-panel-oaisub/` is used instead. **Settings → AI Panel-oAIsub** shows the folder in use and has an **Open folder** button. So does the bottom of the session drawer.
 
 `index.json` is a cache. If it is missing or unreadable, it is rebuilt from the session files on startup. If you add or delete session files by hand, also delete `index.json` and restart Tabby, so the drawer matches the files.
 

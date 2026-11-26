@@ -65,6 +65,6 @@ export default class AiPanelModule {
     constructor (host: PanelHostService, agent: AgentService, registry: TerminalRegistryService) {
         host.registerPanelComponent(AiPanelComponent)
         // handy for debugging from the devtools console
-        ;(window as any).tabbyAiPanel = { host, agent, registry }
+        ;(window as any).tabbyAiPanelOaiSub = { host, agent, registry }
     }
 }

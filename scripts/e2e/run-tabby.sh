@@ -20,14 +20,14 @@ if [ ! -x "$APP_DIR/tabby" ]; then
     curl -fL -o "$E2E_DIR/$TARBALL" "https://github.com/Eugeny/tabby/releases/download/v${TABBY_VERSION}/${TARBALL}"
     tar -xzf "$E2E_DIR/$TARBALL" -C "$E2E_DIR/tabby"
 fi
-ln -sfn "$ROOT" "$E2E_DIR/plugins/node_modules/tabby-ai-panel"
+ln -sfn "$ROOT" "$E2E_DIR/plugins/node_modules/tabby-ai-panel-oaisub"
 
 CONFIG="$E2E_DIR/home/.config/tabby/config.yaml"
 if [ ! -f "$CONFIG" ]; then
     cat > "$CONFIG" <<YAML
 version: 8
 enableWelcomeTab: false
-aiPanel:
+aiPanelOaiSub:
   endpoint: http://127.0.0.1:18080
   model: fake-model
   panelVisible: true

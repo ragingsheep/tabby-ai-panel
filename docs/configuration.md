@@ -1,6 +1,6 @@
 # Configuration
 
-Change all settings in **Settings → AI Panel**. They are stored in Tabby's own config file (`config.yaml`) under the `aiPanel` key, next to the rest of your Tabby configuration, and take effect immediately.
+Change all settings in **Settings → AI Panel-oAIsub**. They are stored in Tabby's own config file (`config.yaml`) under the `aiPanelOaiSub` key, next to the rest of your Tabby configuration, and take effect immediately.
 
 - [Settings reference](#settings-reference)
 - [Example `config.yaml`](#example-configyaml)
@@ -63,7 +63,7 @@ The settings page also shows where sessions are stored, with an **Open folder** 
 ## Example `config.yaml`
 
 ```yaml
-aiPanel:
+aiPanelOaiSub:
   endpoint: https://openrouter.ai/api
   apiKey: sk-or-...
   model: anthropic/claude-sonnet-4.5
@@ -129,13 +129,13 @@ The panel registers these hotkeys with Tabby. Their default bindings are listed 
 
 | Id | Action |
 | --- | --- |
-| `ai-panel-toggle` | Toggle the panel |
-| `ai-panel-approve` | Approve the pending action |
-| `ai-panel-deny` | Deny the pending action |
-| `ai-panel-stop` | Stop the agent |
-| `ai-panel-focus-input` | Focus the message box (opens the panel) |
-| `ai-panel-new-session` | New session |
+| `ai-panel-oaisub-toggle` | Toggle the panel |
+| `ai-panel-oaisub-approve` | Approve the pending action |
+| `ai-panel-oaisub-deny` | Deny the pending action |
+| `ai-panel-oaisub-stop` | Stop the agent |
+| `ai-panel-oaisub-focus-input` | Focus the message box (opens the panel) |
+| `ai-panel-oaisub-new-session` | New session |
 
 ## Resetting
 
-**Reset settings** at the bottom of the settings page restores every `aiPanel` setting to its default, **including the endpoint, API key and model**. Sessions and hotkeys are not affected.
+**Reset settings** at the bottom of the settings page restores every `aiPanelOaiSub` setting to its default, **including the endpoint, API key and model**. Sessions and hotkeys are not affected.

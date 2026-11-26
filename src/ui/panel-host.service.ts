@@ -6,7 +6,7 @@ import { AgentService } from '../core/agent.service'
 import { CONFIG_KEY, DEFAULT_CONFIG, HOTKEY_IDS, PanelSide } from '../types/config'
 
 const MIN_WIDTH = 300
-const STYLE_ID = 'ai-panel-layout-style'
+const STYLE_ID = 'ai-panel-oaisub-layout-style'
 
 /**
  * Mounts the panel as a docked sidebar.
@@ -149,7 +149,7 @@ export class PanelHostService {
         if (this.wrapper || !this.panelType) return
         const contentArea = findTabContentArea()
         const wrapper = document.createElement('div')
-        wrapper.className = 'ai-panel-wrapper'
+        wrapper.className = 'ai-panel-oaisub-wrapper'
         this.wrapper = wrapper
 
         this.ref = createComponent(this.panelType, {
@@ -180,7 +180,7 @@ export class PanelHostService {
         this.wrapper?.remove()
         this.wrapper = null
         this.mountedTo = null
-        document.body.classList.remove('ai-panel-open', 'ai-panel-left', 'ai-panel-right')
+        document.body.classList.remove('ai-panel-oaisub-open', 'ai-panel-oaisub-left', 'ai-panel-oaisub-right')
         document.getElementById(STYLE_ID)?.remove()
         this.nudgeResize()
     }
@@ -188,11 +188,11 @@ export class PanelHostService {
     private applyLayout (): void {
         if (!this.wrapper) return
         const body = document.body
-        body.style.setProperty('--ai-panel-width', `${this.width}px`)
+        body.style.setProperty('--ai-panel-oaisub-width', `${this.width}px`)
         this.wrapper.style.fontSize = `${this.fontSize}px`
-        body.classList.add('ai-panel-open')
-        body.classList.toggle('ai-panel-left', this.side === 'left')
-        body.classList.toggle('ai-panel-right', this.side === 'right')
+        body.classList.add('ai-panel-oaisub-open')
+        body.classList.toggle('ai-panel-oaisub-left', this.side === 'left')
+        body.classList.toggle('ai-panel-oaisub-right', this.side === 'right')
         let style = document.getElementById(STYLE_ID) as HTMLStyleElement | null
         if (!style) {
             style = document.createElement('style')
@@ -201,23 +201,23 @@ export class PanelHostService {
         }
         const fixed = this.mountedTo === 'body'
         style.textContent = `
-            .ai-panel-wrapper {
+            .ai-panel-oaisub-wrapper {
                 position: ${fixed ? 'fixed' : 'absolute'};
                 top: 0; bottom: 0;
-                width: var(--ai-panel-width);
+                width: var(--ai-panel-oaisub-width);
                 z-index: ${fixed ? 1000 : 20};
                 display: flex;
                 background: var(--theme-bg, var(--bs-body-bg, #1e1e1e));
                 color: var(--theme-fg, var(--bs-body-color, #ddd));
             }
-            body.ai-panel-right .ai-panel-wrapper { right: 0; border-left: 1px solid var(--theme-bg-more-2, rgba(255,255,255,0.08)); }
-            body.ai-panel-left .ai-panel-wrapper { left: 0; border-right: 1px solid var(--theme-bg-more-2, rgba(255,255,255,0.08)); }
+            body.ai-panel-oaisub-right .ai-panel-oaisub-wrapper { right: 0; border-left: 1px solid var(--theme-bg-more-2, rgba(255,255,255,0.08)); }
+            body.ai-panel-oaisub-left .ai-panel-oaisub-wrapper { left: 0; border-right: 1px solid var(--theme-bg-more-2, rgba(255,255,255,0.08)); }
             ${fixed ? '' : `
-            body.ai-panel-open app-root .content-tab {
-                width: calc(100% - var(--ai-panel-width)) !important;
+            body.ai-panel-oaisub-open app-root .content-tab {
+                width: calc(100% - var(--ai-panel-oaisub-width)) !important;
             }
-            body.ai-panel-open.ai-panel-left app-root .content-tab.content-tab-active {
-                left: var(--ai-panel-width) !important;
+            body.ai-panel-oaisub-open.ai-panel-oaisub-left app-root .content-tab.content-tab-active {
+                left: var(--ai-panel-oaisub-width) !important;
             }`}
         `
         this.nudgeResize()

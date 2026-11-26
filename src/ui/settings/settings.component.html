@@ -1,5 +1,5 @@
 <div class="ai-settings">
-  <h3>AI Panel</h3>
+  <h3>AI Panel-oAIsub</h3>
   <p class="text-muted">An autonomous agent that can read and type into every open terminal tab.</p>
   <div class="form-line">
     <div class="header">
@@ -18,7 +18,7 @@
     </select>
   </div>
   <ng-container *ngIf="c.provider === 'chatgpt'">
-    <p>Use your eligible ChatGPT plan for AI Panel requests. Terminal context and command output are sent to OpenAI; only run commands on systems you are authorised to access.</p>
+    <p>Use your eligible ChatGPT plan for AI Panel-oAIsub requests. Terminal context and command output are sent to OpenAI; only run commands on systems you are authorised to access.</p>
     <p class="text-muted">{{ account?.identity?.email || account?.profileLabel || 'No ChatGPT account selected' }} — {{ account?.status || 'Not connected' }}{{ account?.sharing ? ' · Plan usage enabled' : '' }}</p>
     <p class="text-muted" *ngIf="accountBusy">Completing the browser sign-in or account operation… Return to Tabby after granting consent.</p>
     <p class="text-muted" *ngIf="accountRefreshing && !accountBusy">Checking saved ChatGPT connection…</p>

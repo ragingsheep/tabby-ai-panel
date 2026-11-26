@@ -8,7 +8,7 @@ import { ModelCatalogService } from '../../core/model-catalog.service'
 import { AiPanelConfig, CONFIG_KEY, DEFAULT_CONFIG } from '../../types/config'
 
 @Component({
-    selector: 'ai-panel-settings',
+    selector: 'ai-panel-oaisub-settings',
     templateUrl: './settings.component.html',
     styleUrls: ['./settings.component.scss'],
 })
@@ -172,7 +172,7 @@ export class AiPanelSettingsComponent implements OnInit, OnDestroy {
     }
 
     resetDefaults (): void {
-        if (!confirm('Reset all AI panel settings to defaults? Your sessions are kept.')) return
+        if (!confirm('Reset all AI Panel-oAIsub settings to defaults? Your sessions are kept.')) return
         Object.assign(this.config.store[CONFIG_KEY], DEFAULT_CONFIG)
         this.save()
     }

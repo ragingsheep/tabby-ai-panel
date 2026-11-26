@@ -30,7 +30,7 @@ export interface AiPanelConfig {
     autoTitle: boolean
 }
 
-export const CONFIG_KEY = 'aiPanel'
+export const CONFIG_KEY = 'aiPanelOaiSub'
 
 export const DEFAULT_CONFIG: AiPanelConfig = {
     provider: 'compatible',
@@ -55,10 +55,10 @@ export const DEFAULT_CONFIG: AiPanelConfig = {
 }
 
 export const HOTKEY_IDS = {
-    toggle: 'ai-panel-toggle',
-    approve: 'ai-panel-approve',
-    deny: 'ai-panel-deny',
-    stop: 'ai-panel-stop',
-    focusInput: 'ai-panel-focus-input',
-    newSession: 'ai-panel-new-session',
+    toggle: 'ai-panel-oaisub-toggle',
+    approve: 'ai-panel-oaisub-approve',
+    deny: 'ai-panel-oaisub-deny',
+    stop: 'ai-panel-oaisub-stop',
+    focusInput: 'ai-panel-oaisub-focus-input',
+    newSession: 'ai-panel-oaisub-new-session',
 } as const

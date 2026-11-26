@@ -117,7 +117,7 @@ export class AgentService {
             try {
                 extra = JSON.parse(s.extraParamsText)
             } catch {
-                this.notifications.error('AI panel: extra request parameters are not valid JSON')
+                this.notifications.error('AI Panel-oAIsub: extra request parameters are not valid JSON')
             }
         }
         return new OpenAICompatibleProvider({ endpoint: s.endpoint, apiKey: s.apiKey, model: s.model, extraParams: extra })
@@ -148,7 +148,7 @@ export class AgentService {
         }
         const loaded = this.store.load(id)
         if (!loaded) {
-            this.notifications.error('AI panel: session not found')
+            this.notifications.error('AI Panel-oAIsub: session not found')
             return false
         }
         await this.stopAndWait()
@@ -333,7 +333,7 @@ export class AgentService {
         const profile = this.profilesCache.find(p => p.id === t.descriptor.profileId)
             ?? this.profilesCache.find(p => p.name === t.descriptor.profileName)
         if (!profile) {
-            this.notifications.error(`AI panel: profile for ${t.label} no longer exists`)
+            this.notifications.error(`AI Panel-oAIsub: profile for ${t.label} no longer exists`)
             return false
         }
         const entry = await this.openProfile(profile)
@@ -389,7 +389,7 @@ export class AgentService {
         try {
             tab = await this.zone.run(() => this.profiles.openNewTabForProfile(profile))
         } catch (e) {
-            this.notifications.error(`AI panel: could not open ${profile.name}: ${(e as Error).message}`)
+            this.notifications.error(`AI Panel-oAIsub: could not open ${profile.name}: ${(e as Error).message}`)
             return null
         }
         if (!tab) return null
@@ -436,7 +436,7 @@ export class AgentService {
             return
         }
         if (!this.configured) {
-            this.error = 'Configure the AI provider and model in Settings → AI Panel first.'
+            this.error = 'Configure the AI provider and model in Settings → AI Panel-oAIsub first.'
             this.emit()
             return
         }
@@ -585,7 +585,7 @@ export class AgentService {
                 if (assistant) {
                     assistant.error = message
                 }
-                console.error('[ai-panel] turn failed', e)
+                console.error('[ai-panel-oaisub] turn failed', e)
             }
         } finally {
             // drop an assistant message that never produced anything

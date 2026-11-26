@@ -68,7 +68,7 @@ test('hotkey ids and default bindings are documented', () => {
     const usage = read('docs/usage.md').split('\n')
     for (const name of Object.keys(HOTKEY_IDS)) {
         const pcKeys = `\`${pc[name].replace(/-/g, '+')}\``
-        const macKeys = `\`${macOS[name].replace('-Shift-', '⇧').replace(/-/g, '')}\``
+        const macKeys = `\`${macOS[name].replace('-Alt-Shift-', 'Alt⇧').replace('-Shift-', '⇧').replace(/-/g, '')}\``
         assert.ok(usage.some(l => l.includes(pcKeys) && l.includes(macKeys)), `docs/usage.md should list ${pcKeys} / ${macKeys} for ${name}`)
     }
 })
@@ -85,7 +85,7 @@ test('relative links and anchors in the Markdown files resolve', () => {
         return new Set([...text.matchAll(/^#{1,6} (.+)$/gm)].map(m => slug(m[1])))
     }
     // absolute links into this repository (used where npm renders the README) must point at real files too
-    const repoRaw = 'https://raw.githubusercontent.com/giejqf/tabby-ai-panel/main/'
+    const repoRaw = 'https://raw.githubusercontent.com/ragingsheep/tabby-ai-panel/feature/native-chatgpt-signin/'
     for (const file of markdownFiles) {
         const text = read(file).replace(/```[\s\S]*?```/g, '')
         const targets = [...text.matchAll(/\]\(([^)\s]+)\)|(?:href|src)="([^"]+)"/g)].map(m => m[1] ?? m[2])

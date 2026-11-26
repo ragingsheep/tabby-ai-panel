@@ -1,7 +1,7 @@
-// Global styles for the AI panel. Everything is scoped under .ai-panel-wrapper
+// Global styles for the AI Panel-oAIsub. Everything is scoped under .ai-panel-oaisub-wrapper
 // so nothing leaks into Tabby's own UI.
 
-.ai-panel-wrapper {
+.ai-panel-oaisub-wrapper {
   --ai-bg: var(--theme-bg, var(--bs-body-bg, #1b1e23));
   --ai-fg: var(--theme-fg, var(--bs-body-color, #dfe3e8));
   --ai-surface: rgba(127, 127, 127, 0.10);

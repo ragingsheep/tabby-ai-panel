@@ -69,10 +69,10 @@ All notable changes to this project are documented here. The format follows [Kee
 - Reviewable execution: risk badges, per-session approval modes, always-confirmed destructive patterns, live output, Send Ctrl+C, and hotkeys.
 - Streaming client for OpenAI-compatible endpoints over Node HTTP, with tool calling, reasoning tokens and context budgeting.
 
-[Unreleased]: https://github.com/giejqf/tabby-ai-panel/compare/3e93d65...HEAD
-[0.1.5]: https://github.com/giejqf/tabby-ai-panel/commit/3e93d65
-[0.1.4]: https://github.com/giejqf/tabby-ai-panel/commit/2a14e30
-[0.1.3]: https://github.com/giejqf/tabby-ai-panel/commit/87d53fa
-[0.1.2]: https://github.com/giejqf/tabby-ai-panel/commit/60886ef
-[0.1.1]: https://github.com/giejqf/tabby-ai-panel/commit/e2760c0
-[0.1.0]: https://github.com/giejqf/tabby-ai-panel/commit/eafd65f
+[Unreleased]: https://github.com/ragingsheep/tabby-ai-panel/compare/3e93d65...HEAD
+[0.1.5]: https://github.com/ragingsheep/tabby-ai-panel/commit/3e93d65
+[0.1.4]: https://github.com/ragingsheep/tabby-ai-panel/commit/2a14e30
+[0.1.3]: https://github.com/ragingsheep/tabby-ai-panel/commit/87d53fa
+[0.1.2]: https://github.com/ragingsheep/tabby-ai-panel/commit/60886ef
+[0.1.1]: https://github.com/ragingsheep/tabby-ai-panel/commit/e2760c0
+[0.1.0]: https://github.com/ragingsheep/tabby-ai-panel/commit/eafd65f

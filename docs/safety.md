@@ -76,7 +76,7 @@ A terminal you remove from the session with **×** on its chip is left out of ev
 
 ## What is stored on disk
 
-- **Sessions** are plain JSON files, one per session, under `<Tabby config dir>/ai-panel/`. See [Sessions](sessions.md#storage). They contain the full transcript, **including complete command output**, so treat that folder like shell history. Delete sessions from the drawer, or delete the files.
+- **Sessions** are plain JSON files, one per session, under `<Tabby config dir>/ai-panel-oaisub/`. See [Sessions](sessions.md#storage). They contain the full transcript, **including complete command output**, so treat that folder like shell history. Delete sessions from the drawer, or delete the files.
 - **Settings**, including the **API key**, are stored in Tabby's `config.yaml`.
 
 ## Rendering model output
