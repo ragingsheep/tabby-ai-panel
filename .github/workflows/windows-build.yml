@@ -1,0 +1,58 @@
+name: Windows plugin build
+
+on:
+  push:
+    branches: [feature/native-chatgpt-signin]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          architecture: x64
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Package Windows x64 plugin with portable Node runtime
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = (node --version).Trim()
+          $archive = "node-$version-win-x64.zip"
+          $base = "https://nodejs.org/dist/$version"
+          Invoke-WebRequest "$base/$archive" -OutFile "$env:RUNNER_TEMP/$archive"
+          $sums = (Invoke-WebRequest "$base/SHASUMS256.txt").Content
+          $line = ($sums -split "`n" | Where-Object { $_.Trim().EndsWith("  $archive") })
+          if (@($line).Count -ne 1) { throw 'Missing Node checksum' }
+          $expected = ($line.Trim() -split '\s+')[0]
+          if ((Get-FileHash "$env:RUNNER_TEMP/$archive" -Algorithm SHA256).Hash -ne $expected) { throw 'Node checksum mismatch' }
+          Expand-Archive "$env:RUNNER_TEMP/$archive" "$env:RUNNER_TEMP/node-portable"
+          $nodeDir = "$env:RUNNER_TEMP/node-portable/node-$version-win-x64"
+          $plugin = 'stage/tabby-ai-panel'
+          New-Item -ItemType Directory -Force "$plugin/dist" | Out-Null
+          Copy-Item dist/* "$plugin/dist" -Recurse
+          Copy-Item "$nodeDir/node.exe" "$plugin/dist/node.exe"
+          Copy-Item "$nodeDir/LICENSE" "$plugin/dist/NODE-LICENSE.txt"
+          Copy-Item package.json,README.md,LICENSE "$plugin"
+          Copy-Item docs/chatgpt-signin.md "$plugin/INSTALL.md"
+          if (!(Test-Path "$plugin/dist/index.js") -or !(Test-Path "$plugin/dist/siwc-worker.cjs")) { throw 'Incomplete plugin build' }
+          & "$plugin/dist/node.exe" --check "$plugin/dist/siwc-worker.cjs"
+          if ($LASTEXITCODE -ne 0) { throw 'Worker syntax validation failed' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tabby-ai-panel-siwc-windows-x64
+          path: stage/
+          if-no-files-found: error
+          retention-days: 30
