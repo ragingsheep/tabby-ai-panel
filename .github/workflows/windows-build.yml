@@ -13,10 +13,10 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
           architecture: x64
@@ -50,7 +50,7 @@ jobs:
           if (!(Test-Path "$plugin/dist/index.js") -or !(Test-Path "$plugin/dist/siwc-worker.cjs")) { throw 'Incomplete plugin build' }
           & "$plugin/dist/node.exe" --check "$plugin/dist/siwc-worker.cjs"
           if ($LASTEXITCODE -ne 0) { throw 'Worker syntax validation failed' }
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: tabby-ai-panel-siwc-windows-x64
           path: stage/

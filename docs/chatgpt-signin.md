@@ -4,7 +4,15 @@ This Windows-only preview uses the official OpenAI Sign in with ChatGPT DevKit a
 
 ## Build and install
 
-Requires Git, Windows PowerShell 5.1 and Node.js 22.12+ on PATH (including when Tabby starts). From this branch:
+### Prebuilt Windows x64 artifact
+
+Open the [Windows build runs](https://github.com/ragingsheep/tabby-ai-panel/actions), select the latest successful build for `feature/native-chatgpt-signin` and download `tabby-ai-panel-siwc-windows-x64` under Artifacts. This package includes portable Node.js, so Git, npm and a system Node installation are not required. Windows PowerShell 5.1 is needed for credential encryption.
+
+Close Tabby, back up any existing plugin and extract the ZIP into `%APPDATA%/tabby/plugins/node_modules/` so that `tabby-ai-panel/package.json` and `tabby-ai-panel/dist/index.js` exist. Restart Tabby.
+
+### Building from source
+
+Requires Git, Windows PowerShell 5.1 and Node.js 22.12+ on PATH (including when Tabby starts if no portable runtime is bundled). From this branch:
 
     npm ci
     npm run typecheck

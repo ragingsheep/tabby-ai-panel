@@ -12,6 +12,16 @@ Change all settings in **Settings → AI Panel**. They are stored in Tabby's own
 
 ## Settings reference
 
+### AI provider
+
+| Setting | Key | Default | Description |
+| --- | --- | --- | --- |
+| AI provider | `provider` | `compatible` | Select `compatible` for API-key and local providers or `chatgpt` for native subscription sign-in (Windows preview). |
+| ChatGPT model | `chatgptModel` | `''` | Model selected from the signed-in account's available models. Independent of the compatible provider's model. |
+| Reasoning effort | `chatgptEffort` | `default` | ChatGPT reasoning effort. Model default omits the explicit effort parameter. |
+
+ChatGPT OAuth credentials are encrypted separately from `config.yaml`. See [Native Sign in with ChatGPT](chatgpt-signin.md).
+
 ### Model endpoint
 
 | Setting | Key | Default | Description |
