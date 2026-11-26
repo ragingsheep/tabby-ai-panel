@@ -1,6 +1,7 @@
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process'
 import { join } from 'path'
 import { createInterface } from 'readline'
+import { existsSync } from 'fs'
 import { ChatMessage, ChatProvider, ChatStreamEvent, ToolSpec } from './types'
 import { ModelInfo } from './models'
 import { completedEvents, responseInput, responseTools } from './siwc-wire'
@@ -16,7 +17,8 @@ export function cancelChatGPTRequests (): void {
 type WorkerMessage = { type: string, value?: any, message?: string }
 async function* worker (request: object, signal?: AbortSignal): AsyncGenerator<WorkerMessage> {
     if (signal?.aborted) throw new Error('Cancelled')
-    const child = spawn('node', [join(__dirname, 'siwc-worker.cjs')], { windowsHide: true, shell: false, stdio: 'pipe' })
+    const bundledNode = join(__dirname, 'node.exe')
+    const child = spawn(existsSync(bundledNode) ? bundledNode : 'node', [join(__dirname, 'siwc-worker.cjs')], { windowsHide: true, shell: false, stdio: 'pipe' })
     active.add(child)
     const queue: WorkerMessage[] = []
     let ended = false, error: Error | undefined, wake: (() => void) | undefined
