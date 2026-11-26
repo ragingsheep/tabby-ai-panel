@@ -25,6 +25,12 @@ input.on('line', async line => {
     started = true
     try {
         switch (req.op) {
+            case 'selftest': {
+                const original = Buffer.from('tabby-siwc-test', 'utf8')
+                const restored = dpapi(false, dpapi(true, original))
+                if (!original.equals(restored)) throw new Error('Credential encryption round-trip failed.')
+                send('result', {ok:true}); break
+            }
             case 'session': send('result', await client.getSession()); break
             case 'profiles': send('result', await client.listProfiles()); break
             case 'signin': send('result', await client.signIn({signal: controller.signal, newProfile: !!req.newProfile, reconsent: !!req.reconsent})); break
@@ -47,6 +53,12 @@ input.on('line', async line => {
         const code = typeof e?.code === 'string' ? e.code : ''
         const message = e?.name === 'ChatGPTError' ? code+': '+e.message : (e?.message === 'Model not available for the selected ChatGPT account.' ? e.message : 'ChatGPT operation failed. Check sign-in, model availability, network and Windows credential storage.')
         process.stdout.write(JSON.stringify({type:'error',message})+'\n')
-    } finally { input.close(); process.stdin.pause() }
+    } finally {
+        // The SDK operation has settled (including its credential persistence and lock
+        // cleanup). Flush the terminal marker, then exit even if stdin is still open.
+        input.close()
+        process.stdin.pause()
+        process.stdout.write(JSON.stringify({type:'finished'})+'\n', () => process.exit(0))
+    }
 })
 input.on('close', () => { if (!started) controller.abort() })

@@ -35,3 +35,7 @@ OAuth credentials are stored separately, encrypted with Windows DPAPI CurrentUse
 Full build, Windows encryption, live OAuth, model inference and live terminal execution have not yet been validated. Do not use on privileged or production machines before testing. This is a development preview, not a production-ready release.
 
 Official docs: https://developers.openai.com/siwc/quickstart and https://github.com/openai/sign-in-with-chatgpt-devkit
+
+## Troubleshooting browser sign-in
+
+After browser consent, Tabby must show a connected account with plan usage enabled. Use **Refresh account status** to reload the saved connection without opening the browser. If the earlier preview appeared stuck, fully exit Tabby before replacing the plugin. The saved account is stored outside the plugin and is retained on update. Do not share authentication URLs, OAuth codes, tokens or credential files when reporting problems. Share only the displayed error text or whether the browser reached the Return to your app page.

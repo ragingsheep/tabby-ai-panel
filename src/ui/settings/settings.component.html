@@ -12,7 +12,7 @@
   <h4>AI provider</h4>
   <div class="form-line">
     <div class="header"><div class="title">Provider</div></div>
-    <select class="form-control" [(ngModel)]="c.provider" (ngModelChange)="providerChanged()" [disabled]="accountBusy">
+    <select class="form-control" [(ngModel)]="c.provider" (ngModelChange)="providerChanged()" [disabled]="accountBusy || accountRefreshing">
       <option value="compatible">OpenAI-compatible API / local models</option>
       <option value="chatgpt">ChatGPT subscription (preview)</option>
     </select>
@@ -20,21 +20,25 @@
   <ng-container *ngIf="c.provider === 'chatgpt'">
     <p>Use your eligible ChatGPT plan for AI Panel requests. Terminal context and command output are sent to OpenAI; only run commands on systems you are authorised to access.</p>
     <p class="text-muted">{{ account?.identity?.email || account?.profileLabel || 'No ChatGPT account selected' }} — {{ account?.status || 'Not connected' }}{{ account?.sharing ? ' · Plan usage enabled' : '' }}</p>
+    <p class="text-muted" *ngIf="accountBusy">Completing the browser sign-in or account operation… Return to Tabby after granting consent.</p>
+    <p class="text-muted" *ngIf="accountRefreshing && !accountBusy">Checking saved ChatGPT connection…</p>
+    <p class="text-warning" *ngIf="account?.status === 'connected' && !account?.sharing">Signed in, but subscription sharing is not enabled. Select Sign in with ChatGPT and grant token-sharing permission.</p>
     <div class="text-danger" *ngIf="accountError">{{ accountError }}</div>
     <div class="text-danger" *ngIf="account?.error">{{ account.error.message }}</div>
     <div class="form-line" *ngIf="profiles.length">
       <div class="header"><div class="title">Saved account</div></div>
-      <select class="form-control" [ngModel]="account?.profileId" (ngModelChange)="changeAccount('select', {id: $event})" [disabled]="accountBusy">
+      <select class="form-control" [ngModel]="account?.profileId" (ngModelChange)="changeAccount('select', {id: $event})" [disabled]="accountBusy || accountRefreshing">
         <option *ngFor="let p of profiles" [ngValue]="p.id" [disabled]="p.pending">{{ p.label }} — {{ p.identity?.email || p.status }}</option>
       </select>
     </div>
     <div class="form-line">
-      <button class="btn btn-primary" (click)="changeAccount('signin', {reconsent: true})" [disabled]="accountBusy">Sign in with ChatGPT</button>
-      <button class="btn btn-secondary" (click)="changeAccount('signin', {newProfile: true})" [disabled]="accountBusy">Add account</button>
+      <button class="btn btn-primary" (click)="changeAccount('signin', {reconsent: true})" [disabled]="accountBusy || accountRefreshing">Sign in with ChatGPT</button>
+      <button class="btn btn-secondary" (click)="changeAccount('signin', {newProfile: true})" [disabled]="accountBusy || accountRefreshing">Add account</button>
     </div>
     <div class="form-line">
       <button class="btn btn-secondary" (click)="changeAccount('disconnect')" [disabled]="accountBusy || !account?.profileId">Sign out</button>
       <button class="btn btn-secondary" (click)="cancelSignIn()" *ngIf="accountBusy">Cancel</button>
+      <button class="btn btn-secondary" (click)="refreshAccount()" [disabled]="accountBusy || accountRefreshing">Refresh account status</button>
       <button class="btn btn-secondary" (click)="openUsage()">Manage ChatGPT usage</button>
     </div>
     <div class="form-line">

@@ -25,6 +25,9 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - name: Test packaged worker lifecycle and Windows credential encryption
+        shell: pwsh
+        run: node --test tests/siwc-worker-lifecycle.test.mjs
       - name: Package Windows x64 plugin with portable Node runtime
         shell: pwsh
         run: |

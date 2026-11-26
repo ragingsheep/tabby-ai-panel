@@ -11,7 +11,7 @@ let generation = 0
 export function accountGeneration (): number { return generation }
 export function cancelChatGPTRequests (): void {
     generation++
-    for (const child of active) if (child.stdin.writable) child.stdin.write('{"cancel":true}\n')
+    for (const child of active) if (child.stdin.writable && !child.stdin.writableEnded) child.stdin.write('{"cancel":true}\n')
 }
 
 type WorkerMessage = { type: string, value?: any, message?: string }
@@ -21,7 +21,7 @@ async function* worker (request: object, signal?: AbortSignal): AsyncGenerator<W
     const child = spawn(existsSync(bundledNode) ? bundledNode : 'node', [join(__dirname, 'siwc-worker.cjs')], { windowsHide: true, shell: false, stdio: 'pipe' })
     active.add(child)
     const queue: WorkerMessage[] = []
-    let ended = false, error: Error | undefined, wake: (() => void) | undefined
+    let ended = false, finished = false, error: Error | undefined, wake: (() => void) | undefined
     const notify = () => { const fn = wake; wake = undefined; fn?.() }
     const lines = createInterface({ input: child.stdout, crlfDelay: Infinity })
     child.stderr.resume()
@@ -29,9 +29,18 @@ async function* worker (request: object, signal?: AbortSignal): AsyncGenerator<W
     child.on('error', () => { error = new Error('Cannot launch Node.js. Install Node.js 22.12+ and restart Tabby.'); ended = true; notify() })
     child.on('close', code => { if (code && !error) error = new Error('ChatGPT worker exited (' + code + ').'); ended = true; notify() })
     lines.on('line', line => {
-        try { queue.push(JSON.parse(line)); notify() } catch { error = new Error('Invalid ChatGPT worker response.'); child.kill(); notify() }
+        try {
+            const item: WorkerMessage = JSON.parse(line)
+            if (item.type === 'finished') {
+                finished = true
+                // The child is waiting on our stdin. Close it on the explicit completion
+                // marker rather than waiting for process exit first.
+                child.stdin.end()
+            } else queue.push(item)
+            notify()
+        } catch { error = new Error('Invalid ChatGPT worker response.'); child.kill(); notify() }
     })
-    const cancel = () => { if (child.stdin.writable) child.stdin.write('{"cancel":true}\n') }
+    const cancel = () => { if (child.stdin.writable && !child.stdin.writableEnded) child.stdin.write('{"cancel":true}\n') }
     signal?.addEventListener('abort', cancel, { once: true })
     try {
         child.stdin.write(JSON.stringify(request) + '\n')
@@ -45,10 +54,11 @@ async function* worker (request: object, signal?: AbortSignal): AsyncGenerator<W
             yield item
         }
         if (error) throw error
+        if (!finished) throw new Error('ChatGPT worker ended without completing the operation.')
     } finally {
         signal?.removeEventListener('abort', cancel)
         cancel()
-        child.stdin.end()
+        if (!child.stdin.writableEnded) child.stdin.end()
         active.delete(child)
         lines.close()
     }

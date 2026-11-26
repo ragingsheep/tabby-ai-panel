@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core'
+import { Component, OnDestroy, OnInit, NgZone, ChangeDetectorRef } from '@angular/core'
 import { Subscription } from 'rxjs'
 import { ConfigService, PlatformService } from 'tabby-core'
 import { OpenAICompatibleProvider } from '../../core/llm/openai-compatible'
@@ -14,6 +14,7 @@ import { AiPanelConfig, CONFIG_KEY, DEFAULT_CONFIG } from '../../types/config'
 })
 export class AiPanelSettingsComponent implements OnInit, OnDestroy {
     accountBusy = false
+    accountRefreshing = false
     accountError = ''
     account: any = null
     profiles: any[] = []
@@ -28,6 +29,8 @@ export class AiPanelSettingsComponent implements OnInit, OnDestroy {
         private platform: PlatformService,
         public store: SessionStoreService,
         private catalog: ModelCatalogService,
+        private zone: NgZone,
+        private changeDetector: ChangeDetectorRef,
     ) {}
 
     ngOnInit (): void {
@@ -65,10 +68,27 @@ export class AiPanelSettingsComponent implements OnInit, OnDestroy {
     }
 
     async loadAccount (): Promise<void> {
+        if (this.accountRefreshing) return
+        this.accountRefreshing = true
         try {
-            this.account = await accountAction('session')
-            this.profiles = await accountAction('profiles')
-        } catch (e) { this.accountError = (e as Error).message }
+            const account = await accountAction('session')
+            const profiles = await accountAction('profiles')
+            this.zone.run(() => {
+                this.account = account
+                this.profiles = profiles
+                this.changeDetector.markForCheck()
+            })
+        } catch (e) {
+            this.zone.run(() => { this.accountError = (e as Error).message; this.changeDetector.markForCheck() })
+        } finally {
+            this.zone.run(() => { this.accountRefreshing = false; this.changeDetector.markForCheck() })
+        }
+    }
+
+    async refreshAccount (): Promise<void> {
+        this.accountError = ''
+        await this.loadAccount()
+        void this.catalog.refresh()
     }
 
     providerChanged (): void {
@@ -81,19 +101,27 @@ export class AiPanelSettingsComponent implements OnInit, OnDestroy {
     }
 
     async changeAccount (op: 'signin' | 'select' | 'disconnect', options: object = {}): Promise<void> {
-        if (this.accountBusy) return
+        if (this.accountBusy || this.accountRefreshing) return
         this.accountBusy = true
         this.accountError = ''
         cancelChatGPTRequests()
         try {
-            await accountAction(op, options)
-            this.c.chatgptModel = ''
-            this.save()
-        } catch (e) { this.accountError = (e as Error).message }
-        finally {
+            const result = await accountAction(op, options)
+            this.zone.run(() => {
+                if (op !== 'disconnect') this.account = result
+                this.c.chatgptModel = ''
+                this.save()
+                this.changeDetector.markForCheck()
+            })
+        } catch (e) {
+            this.zone.run(() => { this.accountError = (e as Error).message; this.changeDetector.markForCheck() })
+        } finally {
             await this.loadAccount()
-            this.accountBusy = false
-            void this.catalog.refresh()
+            this.zone.run(() => {
+                this.accountBusy = false
+                this.changeDetector.markForCheck()
+                void this.catalog.refresh()
+            })
         }
     }
 
