@@ -3,6 +3,7 @@ import { BehaviorSubject, Observable } from 'rxjs'
 import { ConfigService } from 'tabby-core'
 import { OpenAICompatibleProvider, normalizeBaseUrl } from './llm/openai-compatible'
 import { ModelInfo } from './llm/models'
+import { ChatGPTProvider, accountGeneration } from './llm/chatgpt-provider'
 import { CONFIG_KEY } from '../types/config'
 
 export type CatalogStatus =
@@ -57,7 +58,7 @@ export class ModelCatalogService {
         const keep = key === this.key ? this.state.value.models : []
         this.key = key
         this.set({ status: 'loading', models: keep })
-        const provider = new OpenAICompatibleProvider({ endpoint: settings.endpoint, apiKey: settings.apiKey, model: settings.model })
+        const provider = settings.provider === 'chatgpt' ? new ChatGPTProvider(settings.chatgptModel ?? '') : new OpenAICompatibleProvider({ endpoint: settings.endpoint, apiKey: settings.apiKey, model: settings.model })
         const run = provider.listModels().then(
             models => {
                 if (this.key !== key) return
@@ -77,6 +78,7 @@ export class ModelCatalogService {
 
     private currentKey (): string {
         const s = this.config.store[CONFIG_KEY] ?? {}
+        if (s.provider === 'chatgpt') return `chatgpt-account-${accountGeneration()}`
         const base = normalizeBaseUrl(s.endpoint ?? '')
         return base ? `${base}\n${s.apiKey ?? ''}` : ''
     }

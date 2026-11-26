@@ -3,6 +3,9 @@ import { ApprovalMode } from './session'
 export type PanelSide = 'left' | 'right'
 
 export interface AiPanelConfig {
+    provider: 'compatible' | 'chatgpt'
+    chatgptModel: string
+    chatgptEffort: string
     endpoint: string
     apiKey: string
     model: string
@@ -30,6 +33,9 @@ export interface AiPanelConfig {
 export const CONFIG_KEY = 'aiPanel'
 
 export const DEFAULT_CONFIG: AiPanelConfig = {
+    provider: 'compatible',
+    chatgptModel: '',
+    chatgptEffort: 'default',
     endpoint: '',
     apiKey: '',
     model: '',

@@ -32,6 +32,7 @@ const sassLoader = {
 
 export default {
     target: 'node',
+    node: { __dirname: false },
     entry: './src/index.ts',
     context: __dirname,
     devtool: false,

@@ -56,11 +56,14 @@ export class ComposerComponent implements OnInit, OnDestroy {
     }
 
     get model (): string {
-        return this.config.store[CONFIG_KEY]?.model ?? ''
+        const s = this.config.store[CONFIG_KEY]
+        return (s?.provider === 'chatgpt' ? s.chatgptModel : s?.model) ?? ''
     }
 
     setModel (id: string): void {
-        this.config.store[CONFIG_KEY].model = id
+        const s = this.config.store[CONFIG_KEY]
+        if (s.provider === 'chatgpt') s.chatgptModel = id
+        else s.model = id
         this.config.save()
     }
 

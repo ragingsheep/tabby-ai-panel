@@ -8,6 +8,7 @@ import {
 import { AiPanelConfig, CONFIG_KEY, DEFAULT_CONFIG } from '../types/config'
 import { ChatMessage, ChatProvider, ToolSpec } from './llm/types'
 import { OpenAICompatibleProvider } from './llm/openai-compatible'
+import { ChatGPTProvider } from './llm/chatgpt-provider'
 import { describeConnection, matchScore, TerminalEntry, TerminalRegistryService, isTerminalTab } from './terminal-registry.service'
 import { TerminalRunner } from './terminal-runner'
 import { SessionStoreService } from './session-store.service'
@@ -96,7 +97,7 @@ export class AgentService {
     }
 
     get configured (): boolean {
-        return !!this.settings.endpoint.trim()
+        return this.settings.provider === 'chatgpt' ? !!this.settings.chatgptModel.trim() : !!this.settings.endpoint.trim()
     }
 
     get approvalMode (): ApprovalMode {
@@ -110,6 +111,7 @@ export class AgentService {
 
     makeProvider (): ChatProvider {
         const s = this.settings
+        if (s.provider === 'chatgpt') return new ChatGPTProvider(s.chatgptModel, s.chatgptEffort)
         let extra: Record<string, any> = {}
         if (s.extraParamsText.trim()) {
             try {
@@ -434,7 +436,7 @@ export class AgentService {
             return
         }
         if (!this.configured) {
-            this.error = 'Set the LLM endpoint in Settings → AI Panel first.'
+            this.error = 'Configure the AI provider and model in Settings → AI Panel first.'
             this.emit()
             return
         }
@@ -546,7 +548,7 @@ export class AgentService {
                     reasoning: '',
                     toolCalls: [],
                     createdAt: nowIso(),
-                    model: this.settings.model || undefined,
+                    model: (this.settings.provider === 'chatgpt' ? this.settings.chatgptModel : this.settings.model) || undefined,
                 }
                 this.session.messages.push(assistant)
                 this.setPhase('thinking')

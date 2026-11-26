@@ -1,6 +1,6 @@
 {
   "name": "tabby-ai-panel",
-  "version": "0.1.5",
+  "version": "0.1.5-siwc.0",
   "description": "An autonomous AI agent panel for Tabby: works across terminal tabs, keeps persistent, resumable sessions, and runs commands with reviewable approvals.",
   "keywords": [
     "tabby-plugin",
@@ -11,7 +11,7 @@
   ],
   "main": "dist/index.js",
   "scripts": {
-    "build": "webpack --progress --color",
+    "build": "node scripts/build-siwc.mjs && webpack --progress --color",
     "watch": "TABBY_DEV=1 webpack --progress --color --watch",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "node --import tsx --test \"tests/**/*.test.ts\"",
