@@ -2,7 +2,7 @@ import { Injectable, NgZone } from '@angular/core'
 import { BehaviorSubject, Observable } from 'rxjs'
 import { ConfigService } from 'tabby-core'
 import { OpenAICompatibleProvider, normalizeBaseUrl } from './llm/openai-compatible'
-import { ModelInfo } from './llm/models'
+import { ModelInfo, chooseChatGPTModel } from './llm/models'
 import { ChatGPTProvider, accountGeneration } from './llm/chatgpt-provider'
 import { CONFIG_KEY } from '../types/config'
 
@@ -63,7 +63,19 @@ export class ModelCatalogService {
             models => {
                 if (this.key !== key) return
                 this.fetchedAt = Date.now()
-                this.set(models ? { status: 'ready', models } : { status: 'unsupported', models: [] })
+                this.zone.run(() => {
+                    // Ignore results from a provider/account that changed during discovery.
+                    if (this.currentKey() !== key) return
+                    const current = this.config.store[CONFIG_KEY]
+                    if (current?.provider === 'chatgpt' && models) {
+                        const selected = chooseChatGPTModel(current.chatgptModel ?? '', models)
+                        if (selected !== current.chatgptModel) {
+                            current.chatgptModel = selected
+                            this.config.save()
+                        }
+                    }
+                    this.set(models ? { status: 'ready', models } : { status: 'unsupported', models: [] })
+                })
             },
             (e: Error) => {
                 if (this.key !== key) return

@@ -10,7 +10,7 @@
       </p>
       <div class="empty-warning" *ngIf="!configured">
         <i class="fas fa-plug"></i>
-        No LLM endpoint configured yet.
+        Select a model or configure your AI provider.
         <button class="ai-btn small primary" type="button" (click)="openSettings.emit()">Open settings</button>
       </div>
       <div class="examples" *ngIf="configured">

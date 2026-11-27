@@ -68,9 +68,15 @@
   <div class="form-line">
     <div class="header">
       <div class="title">Model</div>
-      <div class="description">Pick from the server's list, or type any id it accepts. Must support tool calling.</div>
+      <div class="description" *ngIf="c.provider === 'chatgpt'">Choose a model available under your ChatGPT plan. The first available model is selected automatically if none is selected.</div>
+      <div class="description" *ngIf="c.provider !== 'chatgpt'">Pick from the server's list, or type any id it accepts. Must support tool calling.</div>
+      <div class="description text-danger" *ngIf="c.provider === 'chatgpt' && catalogState.status === 'error'">{{ catalogState.error }}</div>
     </div>
-    <ai-model-picker class="model-picker" [(value)]="selectedModel" (valueChange)="save()" placeholder="Select a model"></ai-model-picker>
+    <select *ngIf="c.provider === 'chatgpt'" class="form-control model-picker" [ngModel]="selectedModel" (ngModelChange)="selectedModel = $event; save()" [disabled]="accountBusy || catalogState.status === 'loading' || !catalogState.models.length">
+      <option value="" disabled>{{ catalogState.status === 'loading' ? 'Loading models…' : 'Select a ChatGPT model' }}</option>
+      <option *ngFor="let model of catalogState.models" [ngValue]="model.id" [disabled]="model.tools === false">{{ model.name || model.id }}{{ model.name && model.name !== model.id ? ' (' + model.id + ')' : '' }}</option>
+    </select>
+    <ai-model-picker *ngIf="c.provider !== 'chatgpt'" class="model-picker" [(value)]="selectedModel" (valueChange)="save()" placeholder="Select a model"></ai-model-picker>
   </div>
   <div class="form-line">
     <div class="header">

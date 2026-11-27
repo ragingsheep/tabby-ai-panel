@@ -4,7 +4,7 @@ import { ConfigService, PlatformService } from 'tabby-core'
 import { OpenAICompatibleProvider } from '../../core/llm/openai-compatible'
 import { ChatGPTProvider, accountAction, cancelChatGPTRequests } from '../../core/llm/chatgpt-provider'
 import { SessionStoreService } from '../../core/session-store.service'
-import { ModelCatalogService } from '../../core/model-catalog.service'
+import { CatalogState, ModelCatalogService } from '../../core/model-catalog.service'
 import { AiPanelConfig, CONFIG_KEY, DEFAULT_CONFIG } from '../../types/config'
 
 @Component({
@@ -13,6 +13,7 @@ import { AiPanelConfig, CONFIG_KEY, DEFAULT_CONFIG } from '../../types/config'
     styleUrls: ['./settings.component.scss'],
 })
 export class AiPanelSettingsComponent implements OnInit, OnDestroy {
+    catalogState: CatalogState = { status: 'unconfigured', models: [] }
     accountBusy = false
     accountRefreshing = false
     accountError = ''
@@ -40,11 +41,13 @@ export class AiPanelSettingsComponent implements OnInit, OnDestroy {
         }
         this.validateExtraParams()
         this.sub.add(this.catalog.state$.subscribe(state => {
-            // a server with a single model (llama.cpp, LM Studio) needs no choice
-            if (state.status === 'ready' && state.models.length === 1 && !this.selectedModel) {
+            this.catalogState = state
+            // Subscription defaults are selected centrally in the catalog service.
+            if (this.c.provider !== 'chatgpt' && state.status === 'ready' && state.models.length === 1 && !this.selectedModel) {
                 this.selectedModel = state.models[0].id
                 this.save()
             }
+            this.changeDetector.markForCheck()
         }))
         if (this.c.provider === 'chatgpt') void this.loadAccount()
         void this.catalog.ensure()

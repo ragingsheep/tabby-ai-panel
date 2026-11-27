@@ -1,7 +1,7 @@
 <button #trigger type="button" class="mp-trigger" [class.form-control]="variant === 'field'" [class.open]="open"
         (click)="toggle()" (keydown)="onTriggerKeydown($event)"
         aria-haspopup="listbox" [attr.aria-expanded]="open" [title]="value ? 'Model: ' + value : placeholder">
-  <span class="mp-value" [class.placeholder]="!value">{{ value || placeholder }}</span>
+  <span class="mp-value" [class.mp-placeholder]="!value">{{ value || placeholder }}</span>
   <i class="fas fa-chevron-down mp-caret"></i>
 </button>
 
