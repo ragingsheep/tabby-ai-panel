@@ -1,0 +1,76 @@
+name: Scan flagged artifact (read only)
+on:
+  push:
+    branches: [feature/native-chatgpt-signin]
+    paths: ['.github/workflows/scan-flagged.yml']
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  defender:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check Defender availability and signatures
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Get-MpComputerStatus | Select-Object AMRunningMode, AMServiceEnabled, AntivirusEnabled, AntivirusSignatureVersion, AntivirusSignatureLastUpdated, RealTimeProtectionEnabled | Format-List
+          $s = Get-MpComputerStatus
+          if (!$s.AMServiceEnabled -or !$s.AntivirusEnabled) { throw 'Defender is unavailable or disabled; no scan verdict.' }
+          Update-MpSignature
+          Get-MpComputerStatus | Select-Object AntivirusSignatureVersion, AntivirusSignatureLastUpdated | Format-List
+      - name: Download and verify exact flagged ZIP
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          gh api repos/ragingsheep/tabby-ai-panel/actions/artifacts/15159527763/zip > $env:RUNNER_TEMP/flagged.zip
+          if ($LASTEXITCODE -ne 0) { throw 'Artifact download failed' }
+          $hash = (Get-FileHash "$env:RUNNER_TEMP/flagged.zip" -Algorithm SHA256).Hash
+          Write-Host "Artifact SHA256: $hash"
+          if ($hash -ne '8782e713516852b0bd8037eddd7e95eb8b7563696fe87768941642f59aa8f2aa') { throw 'Artifact hash mismatch; no scan verdict.' }
+      - name: Scan archive and extracted files without executing them
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $mp = Get-ChildItem "$env:ProgramData/Microsoft/Windows Defender/Platform/*/MpCmdRun.exe" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          $exe = if ($mp) { $mp.FullName } else { "$env:ProgramFiles/Windows Defender/MpCmdRun.exe" }
+          if (!(Test-Path $exe)) { throw 'Defender CLI unavailable' }
+          & $exe -Scan -ScanType 3 -File "$env:RUNNER_TEMP/flagged.zip" -DisableRemediation
+          if ($LASTEXITCODE -ne 0) { throw "Defender ZIP scan returned $LASTEXITCODE (detection or scan error)" }
+          Expand-Archive "$env:RUNNER_TEMP/flagged.zip" "$env:RUNNER_TEMP/flagged"
+          & $exe -Scan -ScanType 3 -File "$env:RUNNER_TEMP/flagged" -DisableRemediation
+          if ($LASTEXITCODE -ne 0) { throw "Defender directory scan returned $LASTEXITCODE (detection or scan error)" }
+          $node = Get-ChildItem "$env:RUNNER_TEMP/flagged" -Recurse -Filter node.exe
+          if (@($node).Count -ne 1) { throw 'Unexpected executable count' }
+          $sig = Get-AuthenticodeSignature $node.FullName
+          $sig | Format-List Status,StatusMessage,SignerCertificate
+          if ($sig.Status -ne 'Valid') { throw 'Node executable signature not valid' }
+          Get-ChildItem "$env:RUNNER_TEMP/flagged" -Recurse -File | Get-FileHash -Algorithm SHA256 | Format-List
+          Write-Host 'Defender completed both scans without reporting a threat; Node Authenticode signature valid.'
+  clamav:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Install scanner and refresh definitions
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clamav
+          sudo systemctl stop clamav-freshclam || true
+          sudo freshclam
+          clamscan --version
+      - name: Download and verify exact flagged artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/ragingsheep/tabby-ai-panel/actions/artifacts/15159527763/zip > "$RUNNER_TEMP/flagged.zip"
+          echo "8782e713516852b0bd8037eddd7e95eb8b7563696fe87768941642f59aa8f2aa  $RUNNER_TEMP/flagged.zip" | sha256sum -c -
+      - name: Scan archive and extracted files without executing them
+        run: |
+          clamscan --max-filesize=200M --max-scansize=400M "$RUNNER_TEMP/flagged.zip"
+          unzip -q "$RUNNER_TEMP/flagged.zip" -d "$RUNNER_TEMP/flagged"
+          clamscan --recursive --max-filesize=200M --max-scansize=400M "$RUNNER_TEMP/flagged"
+          find "$RUNNER_TEMP/flagged" -type f -exec sha256sum {} +
