@@ -8,3 +8,5 @@ tabby-ai-agent/
 tabby-ai-assistant/
 release/
 *.zip
+
+/vendor/siwc-devkit/

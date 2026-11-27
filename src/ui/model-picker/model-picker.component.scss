@@ -35,7 +35,7 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    &.placeholder { opacity: .55; }
+    &.mp-placeholder { opacity: .65; }
   }
   .mp-caret { flex: none; font-size: .7em; opacity: .6; transition: transform .15s; }
   &.open .mp-caret { transform: rotate(180deg); }

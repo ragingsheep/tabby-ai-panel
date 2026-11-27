@@ -1,14 +1,14 @@
 # Contributing
 
-Thanks for your interest in Tabby AI Panel! Bug reports, ideas and pull requests are welcome.
+Thanks for your interest in Tabby AI Panel-oAIsub! Bug reports, ideas and pull requests are welcome.
 
 ## Reporting bugs and requesting features
 
-Open an [issue](https://github.com/giejqf/tabby-ai-panel/issues). For bugs, please include:
+Open an [issue](https://github.com/ragingsheep/tabby-ai-panel/issues). For bugs, please include:
 
 - the plugin version (**Settings → Plugins**) and the Tabby version,
 - your OS, the kind of terminal involved (local shell, SSH, split pane), and the model server and model,
-- what you did, what you expected and what happened, plus any `[ai-panel]` lines from the developer tools console (**Settings → Application → Debugging → Open DevTools**).
+- what you did, what you expected and what happened, plus any `[ai-panel-oaisub]` lines from the developer tools console (**Settings → Application → Debugging → Open DevTools**).
 
 Remove hostnames, IPs, keys and command output you don't want to share. Report security issues privately, as described in [SECURITY.md](SECURITY.md).
 

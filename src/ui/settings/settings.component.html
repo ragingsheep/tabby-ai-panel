@@ -1,5 +1,5 @@
 <div class="ai-settings">
-  <h3>AI Panel</h3>
+  <h3>AI Panel-oAIsub</h3>
   <p class="text-muted">An autonomous agent that can read and type into every open terminal tab.</p>
   <div class="form-line">
     <div class="header">
@@ -9,6 +9,46 @@
     <button class="btn btn-secondary" (click)="openDataFolder()">Open folder</button>
   </div>
 
+  <h4>AI provider</h4>
+  <div class="form-line">
+    <div class="header"><div class="title">Provider</div></div>
+    <select class="form-control" [(ngModel)]="c.provider" (ngModelChange)="providerChanged()" [disabled]="accountBusy || accountRefreshing">
+      <option value="compatible">OpenAI-compatible API / local models</option>
+      <option value="chatgpt">ChatGPT subscription (preview)</option>
+    </select>
+  </div>
+  <ng-container *ngIf="c.provider === 'chatgpt'">
+    <p>Use your eligible ChatGPT plan for AI Panel-oAIsub requests. Terminal context and command output are sent to OpenAI; only run commands on systems you are authorised to access.</p>
+    <p class="text-muted">{{ account?.identity?.email || account?.profileLabel || 'No ChatGPT account selected' }} — {{ account?.status || 'Not connected' }}{{ account?.sharing ? ' · Plan usage enabled' : '' }}</p>
+    <p class="text-muted" *ngIf="accountBusy">Completing the browser sign-in or account operation… Return to Tabby after granting consent.</p>
+    <p class="text-muted" *ngIf="accountRefreshing && !accountBusy">Checking saved ChatGPT connection…</p>
+    <p class="text-warning" *ngIf="account?.status === 'connected' && !account?.sharing">Signed in, but subscription sharing is not enabled. Select Sign in with ChatGPT and grant token-sharing permission.</p>
+    <div class="text-danger" *ngIf="accountError">{{ accountError }}</div>
+    <div class="text-danger" *ngIf="account?.error">{{ account.error.message }}</div>
+    <div class="form-line" *ngIf="profiles.length">
+      <div class="header"><div class="title">Saved account</div></div>
+      <select class="form-control" [ngModel]="account?.profileId" (ngModelChange)="changeAccount('select', {id: $event})" [disabled]="accountBusy || accountRefreshing">
+        <option *ngFor="let p of profiles" [ngValue]="p.id" [disabled]="p.pending">{{ p.label }} — {{ p.identity?.email || p.status }}</option>
+      </select>
+    </div>
+    <div class="form-line">
+      <button class="btn btn-primary" (click)="changeAccount('signin', {reconsent: true})" [disabled]="accountBusy || accountRefreshing">Sign in with ChatGPT</button>
+      <button class="btn btn-secondary" (click)="changeAccount('signin', {newProfile: true})" [disabled]="accountBusy || accountRefreshing">Add account</button>
+    </div>
+    <div class="form-line">
+      <button class="btn btn-secondary" (click)="changeAccount('disconnect')" [disabled]="accountBusy || !account?.profileId">Sign out</button>
+      <button class="btn btn-secondary" (click)="cancelSignIn()" *ngIf="accountBusy">Cancel</button>
+      <button class="btn btn-secondary" (click)="refreshAccount()" [disabled]="accountBusy || accountRefreshing">Refresh account status</button>
+      <button class="btn btn-secondary" (click)="openUsage()">Manage ChatGPT usage</button>
+    </div>
+    <div class="form-line">
+      <div class="header"><div class="title">Reasoning effort</div><div class="description">Use model default if a model rejects an explicit effort.</div></div>
+      <select class="form-control" [(ngModel)]="c.chatgptEffort" (ngModelChange)="save()">
+        <option value="default">Model default</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="xhigh">Extra high</option>
+      </select>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="c.provider !== 'chatgpt'">
   <h4>Model endpoint</h4>
   <div class="form-line">
     <div class="header">
@@ -24,23 +64,30 @@
     </div>
     <input type="password" class="form-control" [(ngModel)]="c.apiKey" (ngModelChange)="save(); connectionChanged()" autocomplete="off" />
   </div>
+  </ng-container>
   <div class="form-line">
     <div class="header">
       <div class="title">Model</div>
-      <div class="description">Pick from the server's list, or type any id it accepts. Must support tool calling.</div>
+      <div class="description" *ngIf="c.provider === 'chatgpt'">Choose a model available under your ChatGPT plan. The first available model is selected automatically if none is selected.</div>
+      <div class="description" *ngIf="c.provider !== 'chatgpt'">Pick from the server's list, or type any id it accepts. Must support tool calling.</div>
+      <div class="description text-danger" *ngIf="c.provider === 'chatgpt' && catalogState.status === 'error'">{{ catalogState.error }}</div>
     </div>
-    <ai-model-picker class="model-picker" [(value)]="c.model" (valueChange)="save()" placeholder="Select a model"></ai-model-picker>
+    <select *ngIf="c.provider === 'chatgpt'" class="form-control model-picker" [ngModel]="selectedModel" (ngModelChange)="selectedModel = $event; save()" [disabled]="accountBusy || catalogState.status === 'loading' || !catalogState.models.length">
+      <option value="" disabled>{{ catalogState.status === 'loading' ? 'Loading models…' : 'Select a ChatGPT model' }}</option>
+      <option *ngFor="let model of catalogState.models" [ngValue]="model.id" [disabled]="model.tools === false">{{ model.name || model.id }}{{ model.name && model.name !== model.id ? ' (' + model.id + ')' : '' }}</option>
+    </select>
+    <ai-model-picker *ngIf="c.provider !== 'chatgpt'" class="model-picker" [(value)]="selectedModel" (valueChange)="save()" placeholder="Select a model"></ai-model-picker>
   </div>
   <div class="form-line">
     <div class="header">
       <div class="title">Connection test</div>
       <div class="description" *ngIf="testResult" [class.text-success]="testResult.ok" [class.text-danger]="!testResult.ok">{{ testResult.message }}</div>
     </div>
-    <button class="btn btn-secondary" (click)="test()" [disabled]="testing || !c.endpoint">
+    <button class="btn btn-secondary" (click)="test()" [disabled]="testing || accountBusy || (c.provider === 'chatgpt' ? !account?.sharing : !c.endpoint)">
       {{ testing ? 'Testing…' : 'Test' }}
     </button>
   </div>
-  <div class="form-line vertical">
+  <div class="form-line vertical" *ngIf="c.provider !== 'chatgpt'">
     <div class="header">
       <div class="title">Extra request parameters (JSON)</div>
       <div class="description">Merged into every request body, e.g. <code>{{ '{' }}"temperature": 0.2, "max_tokens": 4096{{ '}' }}</code> or provider-specific reasoning options.</div>

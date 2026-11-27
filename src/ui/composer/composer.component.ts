@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs'
 import { ConfigService } from 'tabby-core'
 import { AgentService, AgentState } from '../../core/agent.service'
 import { TerminalRegistryService } from '../../core/terminal-registry.service'
+import { ModelCatalogService } from '../../core/model-catalog.service'
 import { ApprovalMode } from '../../types/session'
 import { CONFIG_KEY, HOTKEY_IDS } from '../../types/config'
 
@@ -37,10 +38,12 @@ export class ComposerComponent implements OnInit, OnDestroy {
         public agent: AgentService,
         private registry: TerminalRegistryService,
         private config: ConfigService,
+        private catalog: ModelCatalogService,
     ) {}
 
     ngOnInit (): void {
         this.sub.add(this.agent.state$.subscribe(s => { this.state = s }))
+        void this.catalog.ensure()
     }
 
     ngOnDestroy (): void {
@@ -55,12 +58,17 @@ export class ComposerComponent implements OnInit, OnDestroy {
         return !this.busy && this.draft.trim().length > 0 && this.agent.configured
     }
 
+    get subscriptionProvider (): boolean { return this.agent.settings.provider === 'chatgpt' }
+
     get model (): string {
-        return this.config.store[CONFIG_KEY]?.model ?? ''
+        const s = this.config.store[CONFIG_KEY]
+        return (s?.provider === 'chatgpt' ? s.chatgptModel : s?.model) ?? ''
     }
 
     setModel (id: string): void {
-        this.config.store[CONFIG_KEY].model = id
+        const s = this.config.store[CONFIG_KEY]
+        if (s.provider === 'chatgpt') s.chatgptModel = id
+        else s.model = id
         this.config.save()
     }
 

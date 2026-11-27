@@ -1,0 +1,135 @@
+name: Windows plugin build
+
+on:
+  push:
+    branches: [feature/native-chatgpt-signin]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+      artifact-digest: ${{ steps.upload.outputs.artifact-digest }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          architecture: x64
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Test packaged worker lifecycle and credential bridge protocol
+        shell: pwsh
+        run: node --test tests/siwc-worker-lifecycle.test.mjs
+      - name: Test real agent loop against simulated terminals
+        run: node scripts/test-agent-integration.mjs
+      - name: Test pinned DevKit OAuth, token refresh, storage and Responses
+        working-directory: vendor/siwc-devkit
+        run: node --experimental-strip-types --test "packages/local/test/*.test.mjs"
+      - name: Capture dependency audits (findings require review)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force security-report | Out-Null
+          npm audit --json | Out-File -Encoding utf8 security-report/tabby-audit.json
+          Write-Host "Tabby audit exit: $LASTEXITCODE"
+          Push-Location vendor/siwc-devkit
+          npm audit --json | Out-File -Encoding utf8 ../../security-report/devkit-audit.json
+          Write-Host "DevKit audit exit: $LASTEXITCODE"
+          Pop-Location
+          exit 0
+      - name: Package Windows x64 plugin with portable Node runtime
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = (node --version).Trim()
+          $archive = "node-$version-win-x64.zip"
+          $base = "https://nodejs.org/dist/$version"
+          Invoke-WebRequest "$base/$archive" -OutFile "$env:RUNNER_TEMP/$archive"
+          $sums = (Invoke-WebRequest "$base/SHASUMS256.txt").Content
+          $line = ($sums -split "`n" | Where-Object { $_.Trim().EndsWith("  $archive") })
+          if (@($line).Count -ne 1) { throw 'Missing Node checksum' }
+          $expected = ($line.Trim() -split '\s+')[0]
+          if ((Get-FileHash "$env:RUNNER_TEMP/$archive" -Algorithm SHA256).Hash -ne $expected) { throw 'Node checksum mismatch' }
+          Expand-Archive "$env:RUNNER_TEMP/$archive" "$env:RUNNER_TEMP/node-portable"
+          $nodeDir = "$env:RUNNER_TEMP/node-portable/node-$version-win-x64"
+          $plugin = 'stage/tabby-ai-panel-oaisub'
+          New-Item -ItemType Directory -Force "$plugin/dist" | Out-Null
+          Copy-Item dist/* "$plugin/dist" -Recurse
+          Copy-Item "$nodeDir/node.exe" "$plugin/dist/node.exe"
+          Copy-Item "$nodeDir/LICENSE" "$plugin/dist/NODE-LICENSE.txt"
+          Copy-Item package.json,README.md,LICENSE "$plugin"
+          Copy-Item docs/chatgpt-signin.md "$plugin/INSTALL.md"
+          if (!(Test-Path "$plugin/dist/index.js") -or !(Test-Path "$plugin/dist/siwc-worker.cjs")) { throw 'Incomplete plugin build' }
+          & "$plugin/dist/node.exe" --check "$plugin/dist/siwc-worker.cjs"
+          if ($LASTEXITCODE -ne 0) { throw 'Worker syntax validation failed' }
+      - name: Verify staged executable and scan with Defender
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $node = 'stage/tabby-ai-panel-oaisub/dist/node.exe'
+          $sig = Get-AuthenticodeSignature $node
+          $sig | Format-List Status,StatusMessage,SignerCertificate
+          if ($sig.Status -ne 'Valid') { throw 'Node executable signature invalid' }
+          $s = Get-MpComputerStatus
+          if (!$s.AMServiceEnabled -or !$s.AntivirusEnabled) { throw 'Defender unavailable; no scan verdict' }
+          Update-MpSignature
+          Get-MpComputerStatus | Select-Object AntivirusSignatureVersion,AntivirusSignatureLastUpdated | Format-List
+          $mp = Get-ChildItem "$env:ProgramData/Microsoft/Windows Defender/Platform/*/MpCmdRun.exe" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          $exe = if ($mp) { $mp.FullName } else { "$env:ProgramFiles/Windows Defender/MpCmdRun.exe" }
+          if (!(Test-Path $exe)) { throw 'Defender CLI unavailable' }
+          & $exe -Scan -ScanType 3 -File (Resolve-Path stage).Path -DisableRemediation
+          if ($LASTEXITCODE -ne 0) { throw "Defender scan returned $LASTEXITCODE" }
+          $root = (Resolve-Path stage).Path
+          Get-ChildItem stage -Recurse -File | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $($_.FullName.Substring($root.Length + 1).Replace('\','/'))"
+          } | Out-File -Encoding utf8 security-report/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: security-review
+          path: security-report/
+          if-no-files-found: warn
+          retention-days: 30
+      - uses: actions/upload-artifact@v5
+        id: upload
+        with:
+          name: tabby-ai-panel-oaisub-windows-x64
+          path: stage/
+          if-no-files-found: error
+          retention-days: 30
+
+  scan-upload:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Install independent scanner
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clamav
+          sudo systemctl stop clamav-freshclam || true
+          sudo freshclam
+          clamscan --version
+      - name: Verify and scan exact uploaded ZIP without execution
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ needs.build.outputs.artifact-id }}
+          EXPECTED_DIGEST: ${{ needs.build.outputs.artifact-digest }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip" > "$RUNNER_TEMP/plugin.zip"
+          echo "$EXPECTED_DIGEST  $RUNNER_TEMP/plugin.zip" | sha256sum -c -
+          clamscan --max-filesize=200M --max-scansize=400M "$RUNNER_TEMP/plugin.zip"
+          unzip -q "$RUNNER_TEMP/plugin.zip" -d "$RUNNER_TEMP/plugin"
+          clamscan --recursive --max-filesize=200M --max-scansize=400M "$RUNNER_TEMP/plugin"

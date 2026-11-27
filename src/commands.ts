@@ -16,8 +16,8 @@ export class AiPanelCommandProvider extends CommandProvider {
     async provide (_context: CommandContext): Promise<Command[]> {
         return [
             {
-                id: 'ai-panel:toggle',
-                label: 'AI Agent',
+                id: 'ai-panel-oaisub:toggle',
+                label: 'AI Agent-oAIsub',
                 icon: PANEL_ICON,
                 locations: [CommandLocation.RightToolbar],
                 weight: 5,

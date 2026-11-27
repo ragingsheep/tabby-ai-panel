@@ -18,12 +18,12 @@ This guide takes you from nothing to a first agent task: install the plugin, con
 ### From Tabby's plugin manager (recommended)
 
 1. Open **Settings → Plugins**.
-2. Search for `ai-panel` and click **Get** on *ai-panel*.
+2. Download the prebuilt fork from [GitHub Actions](https://github.com/ragingsheep/tabby-ai-panel/actions); it is not published to npm. Follow [Windows installation](chatgpt-signin.md).
 3. Restart Tabby.
 
 ### From a zip archive
 
-A release zip contains the built plugin as a folder named `tabby-ai-panel/`. If you don't have one, build it from source with `npm run pack`, which writes `release/tabby-ai-panel-<version>.zip`. Unzip it into Tabby's plugin folder, so that you end up with `plugins/node_modules/tabby-ai-panel/package.json`:
+A release zip contains the built plugin as a folder named `tabby-ai-panel-oaisub/`. If you don't have one, build it from source with `npm run pack`, which writes `release/tabby-ai-panel-oaisub-<version>.zip`. Unzip it into Tabby's plugin folder, so that you end up with `plugins/node_modules/tabby-ai-panel-oaisub/package.json`:
 
 | OS      | Plugin folder                                               |
 | ------- | ----------------------------------------------------------- |
@@ -34,7 +34,7 @@ A release zip contains the built plugin as a folder named `tabby-ai-panel/`. If 
 ```bash
 # Linux example
 mkdir -p ~/.config/tabby/plugins/node_modules
-unzip tabby-ai-panel-<version>.zip -d ~/.config/tabby/plugins/node_modules
+unzip tabby-ai-panel-oaisub-<version>.zip -d ~/.config/tabby/plugins/node_modules
 ```
 
 Then restart Tabby.
@@ -44,7 +44,7 @@ Then restart Tabby.
 For working on the plugin itself. You need Node.js 22 or newer.
 
 ```bash
-git clone https://github.com/giejqf/tabby-ai-panel.git
+git clone -b feature/native-chatgpt-signin https://github.com/ragingsheep/tabby-ai-panel.git
 cd tabby-ai-panel
 npm install
 npm run build
@@ -55,7 +55,7 @@ Restart Tabby afterwards. For the full development workflow, see [Development](d
 
 ## Connect a model
 
-Open **Settings → AI Panel**. You can also click the gear icon in the panel header.
+Open **Settings → AI Panel-oAIsub**. You can also click the gear icon in the panel header.
 
 1. **Endpoint**: the base URL of the server. You can also paste a URL ending in `/v1` or `/v1/chat/completions`, since everything after the base is stripped. The plugin then calls `<base>/v1/chat/completions` for chat and `<base>/v1/models` for the model list.
 2. **API key**: sent as `Authorization: Bearer <key>`. Leave it empty for local servers that don't check keys.
@@ -83,7 +83,7 @@ All settings, including request parameters such as `temperature` and extra instr
 
 ## Run your first task
 
-1. Open the panel with the **AI Agent** (robot) button in the top-right toolbar, or press `Ctrl+Alt+A` (`⌘⇧A` on macOS).
+1. Open the panel with the **AI Agent-oAIsub** (robot) button in the top-right toolbar, or press `Ctrl+Alt+Shift+A` (`⌘Alt⇧A` on macOS).
 2. Make sure the terminals you want to work with are open as tabs. Local shells, SSH sessions and split panes all count.
 3. Type a request and press `Enter`. Type `@` to mention a terminal by name, for example:
 
@@ -91,7 +91,7 @@ All settings, including request parameters such as `temperature` and extra instr
    What is running on port 8080 in @Linux-1?
    ```
 
-4. The agent explains what it will do and proposes commands as cards. In the default mode, **Ask for every action**, nothing is typed into a terminal until you click **Approve** (or press `Ctrl+Alt+Y`).
+4. The agent explains what it will do and proposes commands as cards. In the default mode, **Ask for every action**, nothing is typed into a terminal until you click **Approve** (or press `Ctrl+Alt+Shift+Y`).
 5. Read the result and continue the conversation. Everything is saved automatically as a session you can resume later.
 
 Next, read [Using the panel](usage.md) to learn about approval modes, the terminal chips and sessions. Read [Safety](safety.md) before you let the agent near machines that matter.
@@ -100,8 +100,8 @@ Next, read [Using the panel](usage.md) to learn about approval modes, the termin
 
 | Symptom | What to check |
 | --- | --- |
-| No **AI Agent** button and no **AI Panel** settings tab | The plugin did not load. Check that the folder is `plugins/node_modules/tabby-ai-panel/` and contains `package.json` and `dist/index.js`, then restart Tabby. Load errors appear in the developer tools console (**Settings → Application → Debugging → Open DevTools**). |
-| *Set the LLM endpoint in Settings → AI Panel first.* | No endpoint is configured. |
+| No **AI Agent-oAIsub** button and no **AI Panel-oAIsub** settings tab | The plugin did not load. Check that the folder is `plugins/node_modules/tabby-ai-panel-oaisub/` and contains `package.json` and `dist/index.js`, then restart Tabby. Load errors appear in the developer tools console (**Settings → Application → Debugging → Open DevTools**). |
+| *Set the LLM endpoint in Settings → AI Panel-oAIsub first.* | No endpoint is configured. |
 | `HTTP 401` / `HTTP 403` from the endpoint | Wrong or missing API key. |
 | `HTTP 404` on chat | The endpoint does not serve `/v1/chat/completions` under the base URL you entered. See the note above. |
 | The model answers but never runs anything | The model or server does not support tool calling, or the server needs a flag to enable it (vLLM, llama.cpp). |

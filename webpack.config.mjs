@@ -32,6 +32,7 @@ const sassLoader = {
 
 export default {
     target: 'node',
+    node: { __dirname: false },
     entry: './src/index.ts',
     context: __dirname,
     devtool: false,
@@ -126,7 +127,7 @@ export default {
         new wp.SourceMapDevToolPlugin({
             exclude: [/node_modules/, /vendor/],
             filename: '[file].map',
-            moduleFilenameTemplate: 'webpack-tabby-ai-panel:///[resource-path]',
+            moduleFilenameTemplate: 'webpack-tabby-ai-panel-oaisub:///[resource-path]',
         }),
         new AngularWebpackPlugin({
             tsconfig: path.resolve(__dirname, 'tsconfig.json'),

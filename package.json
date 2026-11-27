@@ -1,7 +1,7 @@
 {
-  "name": "tabby-ai-panel",
-  "version": "0.1.5",
-  "description": "An autonomous AI agent panel for Tabby: works across terminal tabs, keeps persistent, resumable sessions, and runs commands with reviewable approvals.",
+  "name": "tabby-ai-panel-oaisub",
+  "version": "0.1.5-siwc.0",
+  "description": "Tabby AI Panel-oAIsub: autonomous terminal agent with native ChatGPT subscription sign-in and OpenAI-compatible providers.",
   "keywords": [
     "tabby-plugin",
     "tabby",
@@ -11,7 +11,7 @@
   ],
   "main": "dist/index.js",
   "scripts": {
-    "build": "webpack --progress --color",
+    "build": "node scripts/build-siwc.mjs && webpack --progress --color",
     "watch": "TABBY_DEV=1 webpack --progress --color --watch",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "node --import tsx --test \"tests/**/*.test.ts\"",
@@ -26,13 +26,13 @@
   ],
   "license": "MIT",
   "author": "Qianfan Jiang",
-  "homepage": "https://github.com/giejqf/tabby-ai-panel#readme",
+  "homepage": "https://github.com/ragingsheep/tabby-ai-panel/tree/feature/native-chatgpt-signin#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/giejqf/tabby-ai-panel.git"
+    "url": "git+https://github.com/ragingsheep/tabby-ai-panel.git"
   },
   "bugs": {
-    "url": "https://github.com/giejqf/tabby-ai-panel/issues"
+    "url": "https://github.com/ragingsheep/tabby-ai-panel/issues"
   },
   "devDependencies": {
     "@angular/animations": "^15.2.10",
@@ -111,7 +111,5 @@
       "optional": true
     }
   },
-  "publishConfig": {
-    "access": "public"
-  }
+  "private": true
 }

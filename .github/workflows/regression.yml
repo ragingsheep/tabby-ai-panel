@@ -1,0 +1,32 @@
+name: Cross-platform regression
+on:
+  push:
+    branches: [feature/native-chatgpt-signin]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: node --test tests/siwc-worker-lifecycle.test.mjs
+      - run: node scripts/test-agent-integration.mjs
+      - name: Test pinned DevKit local SDK
+        working-directory: vendor/siwc-devkit
+        run: node --experimental-strip-types --test "packages/local/test/*.test.mjs"

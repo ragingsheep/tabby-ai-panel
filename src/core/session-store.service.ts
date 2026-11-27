@@ -14,7 +14,7 @@ interface IndexFile {
 
 /**
  * Persists sessions as JSON files next to Tabby's own config:
- *   <config dir>/ai-panel/sessions/<id>.json   (+ index.json)
+ *   <config dir>/ai-panel-oaisub/sessions/<id>.json   (+ index.json)
  * Files are human readable so users can back up, grep or delete them.
  */
 @Injectable({ providedIn: 'root' })
@@ -37,7 +37,7 @@ export class SessionStoreService {
         try {
             fs.mkdirSync(this.sessionsDir, { recursive: true })
         } catch (e) {
-            console.error('[ai-panel] cannot create data dir', this.sessionsDir, e)
+            console.error('[ai-panel-oaisub] cannot create data dir', this.sessionsDir, e)
         }
         this.loadIndex()
         window.addEventListener('beforeunload', () => this.flush())
@@ -60,7 +60,7 @@ export class SessionStoreService {
             const parsed = JSON.parse(fs.readFileSync(file, 'utf8'))
             return migrate(parsed)
         } catch (e) {
-            console.error('[ai-panel] failed to read session', file, e)
+            console.error('[ai-panel-oaisub] failed to read session', file, e)
             return null
         }
     }
@@ -77,7 +77,7 @@ export class SessionStoreService {
         try {
             fs.rmSync(this.fileFor(id), { force: true })
         } catch (e) {
-            console.error('[ai-panel] failed to delete session', id, e)
+            console.error('[ai-panel-oaisub] failed to delete session', id, e)
         }
         this.index.sessions = this.index.sessions.filter(s => s.id !== id)
         this.indexDirty = true
@@ -115,7 +115,7 @@ export class SessionStoreService {
                 const parsed = migrate(JSON.parse(fs.readFileSync(path.join(this.sessionsDir, f), 'utf8')))
                 sessions.push(summarizeSession(parsed))
             } catch (e) {
-                console.warn('[ai-panel] skipping unreadable session file', f, e)
+                console.warn('[ai-panel-oaisub] skipping unreadable session file', f, e)
             }
         }
         this.index = { version: 1, sessions }
@@ -140,7 +140,7 @@ export class SessionStoreService {
                 }
             }
         } catch (e) {
-            console.warn('[ai-panel] index unreadable, rebuilding', e)
+            console.warn('[ai-panel-oaisub] index unreadable, rebuilding', e)
         }
         this.rebuildIndex()
     }
@@ -175,9 +175,9 @@ function resolveDataDir (platform: PlatformService): string {
         configPath = null
     }
     if (configPath) {
-        return path.join(path.dirname(configPath), 'ai-panel')
+        return path.join(path.dirname(configPath), 'ai-panel-oaisub')
     }
-    return path.join(os.homedir(), '.tabby-ai-panel')
+    return path.join(os.homedir(), '.tabby-ai-panel-oaisub')
 }
 
 function sanitizeId (id: string): string {
@@ -190,7 +190,7 @@ function writeJsonAtomic (file: string, data: unknown): void {
         fs.writeFileSync(tmp, JSON.stringify(data, null, 2), 'utf8')
         fs.renameSync(tmp, file)
     } catch (e) {
-        console.error('[ai-panel] failed to write', file, e)
+        console.error('[ai-panel-oaisub] failed to write', file, e)
         try { fs.rmSync(tmp, { force: true }) } catch { /* ignore */ }
     }
 }

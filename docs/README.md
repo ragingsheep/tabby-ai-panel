@@ -1,4 +1,4 @@
-# Tabby AI Panel documentation
+# Tabby AI Panel-oAIsub documentation
 
 **Using the plugin**
 

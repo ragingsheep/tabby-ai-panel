@@ -31,7 +31,7 @@
     <span class="spacer"></span>
     <span class="meta" *ngIf="tokenSummary">{{ tokenSummary }}</span>
     <ai-model-picker class="model" variant="inline" [value]="model" (valueChange)="setModel($event)"
-                     placeholder="Server default" [hint]="busy ? 'The running task keeps its model; a change applies from your next message.' : ''">
+                     [placeholder]="subscriptionProvider ? 'Select ChatGPT model' : 'Server default'" [hint]="busy ? 'The running task keeps its model; a change applies from your next message.' : ''">
     </ai-model-picker>
   </div>
 </div>

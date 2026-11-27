@@ -49,3 +49,10 @@ export function formatContextLength (n: number): string {
     if (n >= 1000) return `${Math.round(binary ? n / 1024 : n / 1000)}k`
     return String(n)
 }
+
+// Preserve an explicitly selected available model; otherwise use the first
+// listed model not explicitly marked as lacking tool support.
+export function chooseChatGPTModel (current: string, models: ModelInfo[]): string {
+    const candidates = models.filter(m => typeof m.id === 'string' && !!m.id.trim() && m.tools !== false)
+    return candidates.some(m => m.id === current) ? current : candidates[0]?.id ?? ''
+}

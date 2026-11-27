@@ -18,7 +18,7 @@ function tabbyPluginsDir () {
 }
 
 const pluginsDir = tabbyPluginsDir()
-const target = path.join(pluginsDir, 'node_modules', 'tabby-ai-panel')
+const target = path.join(pluginsDir, 'node_modules', 'tabby-ai-panel-oaisub')
 fs.mkdirSync(path.dirname(target), { recursive: true })
 try {
     fs.rmSync(target, { recursive: true, force: true })

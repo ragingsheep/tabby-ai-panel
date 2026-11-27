@@ -1,5 +1,5 @@
-// Build a zip that unpacks as tabby-ai-panel/ inside Tabby's plugins/node_modules/.
-//   npm run pack   →  release/tabby-ai-panel-<version>.zip
+// Build a zip that unpacks as tabby-ai-panel-oaisub/ inside Tabby's plugins/node_modules/.
+//   npm run pack   →  release/tabby-ai-panel-oaisub-<version>.zip
 import { execFileSync } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'

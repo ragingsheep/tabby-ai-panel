@@ -16,14 +16,14 @@ For how the code is organized, see [Architecture](architecture.md).
 Prerequisites: **Node.js 22+** (the test script relies on `node --test` glob support) and **Tabby desktop**.
 
 ```bash
-git clone https://github.com/giejqf/tabby-ai-panel.git
+git clone -b feature/native-chatgpt-signin https://github.com/ragingsheep/tabby-ai-panel.git
 cd tabby-ai-panel
 npm install
 npm run build
 npm run link:tabby
 ```
 
-`link:tabby` symlinks the checkout to `<Tabby config dir>/plugins/node_modules/tabby-ai-panel`. Set `TABBY_PLUGINS` to link into a different plugins directory. Then:
+`link:tabby` symlinks the checkout to `<Tabby config dir>/plugins/node_modules/tabby-ai-panel-oaisub`. Set `TABBY_PLUGINS` to link into a different plugins directory. Then:
 
 1. Run `npm run watch` to rebuild on every change.
 2. Restart Tabby to load the new bundle.
@@ -40,7 +40,7 @@ Tabby provides Angular, RxJS, ng-bootstrap and its own `tabby-*` packages at run
 | `npm test` | Unit tests with `node:test` + `tsx`. |
 | `npm run badges` | Regenerate the README badges in `docs/assets/badges/` from `package.json` and a test run. |
 | `npm run link:tabby` | Symlink the checkout into Tabby's plugins folder. |
-| `npm run pack` | Zip the built plugin → `release/tabby-ai-panel-<version>.zip`. Requires `zip` and a prior build. |
+| `npm run pack` | Zip the built plugin → `release/tabby-ai-panel-oaisub-<version>.zip`. Requires `zip` and a prior build. |
 
 ## Unit tests
 
@@ -93,7 +93,7 @@ node scripts/e2e/e2e.mjs wait-idle done.png    # prints transcript, cards, chips
 Tips:
 
 - If port 18080 is taken, run the fake model on another port and repoint the running plugin:
-  `node scripts/e2e/cdp.mjs "(() => { const c = tabbyAiPanel.agent['config']; c.store.aiPanel.endpoint = 'http://127.0.0.1:18081'; c.save() })()"`
+  `node scripts/e2e/cdp.mjs "(() => { const c = tabbyAiPanelOaiSub.agent['config']; c.store.aiPanelOaiSub.endpoint = 'http://127.0.0.1:18081'; c.save() })()"`
 - `.e2e/home/.config/tabby/config.yaml` persists between runs. Delete it to start from the seeded config.
 - The headless window starts at 800×600. Resize it with
   `node scripts/e2e/cdp.mjs "require('@electron/remote').getCurrentWindow().setBounds({ x: 0, y: 0, width: 1400, height: 900 })"`.
@@ -101,16 +101,16 @@ Tips:
 
 ## Debugging
 
-The module exposes its services in the renderer as `window.tabbyAiPanel`:
+The module exposes its services in the renderer as `window.tabbyAiPanelOaiSub`:
 
 ```js
-tabbyAiPanel.registry.list().map(e => [e.label, tabbyAiPanel.registry.status(e)])
-tabbyAiPanel.agent['state'].value.session           // current session
-tabbyAiPanel.agent.buildMessages()                   // exactly what the next request would send
-tabbyAiPanel.host.toggle()
+tabbyAiPanelOaiSub.registry.list().map(e => [e.label, tabbyAiPanelOaiSub.registry.status(e)])
+tabbyAiPanelOaiSub.agent['state'].value.session           // current session
+tabbyAiPanelOaiSub.agent.buildMessages()                   // exactly what the next request would send
+tabbyAiPanelOaiSub.host.toggle()
 ```
 
-Open the developer tools from **Settings → Application → Debugging → Open DevTools**. Plugin log lines are prefixed with `[ai-panel]`.
+Open the developer tools from **Settings → Application → Debugging → Open DevTools**. Plugin log lines are prefixed with `[ai-panel-oaisub]`.
 
 ## Tabby plugin pitfalls
 
@@ -135,5 +135,5 @@ When you change behaviour, update the docs in the same change. `docs.test.ts` ca
 3. Run `npm run typecheck && npm test && npm run build`.
 4. Check the build in Tabby: link it, or run the e2e harness.
 5. Commit, tag `v<version>`, and push.
-6. `npm publish`. `prepublishOnly` builds and tests again. Tabby's plugin manager lists the new version a few minutes later.
-7. Optional: run `npm run pack` and attach `release/tabby-ai-panel-<version>.zip` to a GitHub release for manual installs.
+6. Download the build artifact from this fork's [GitHub Actions](https://github.com/ragingsheep/tabby-ai-panel/actions). This development fork is not published to npm.
+7. Optional: run `npm run pack` and attach `release/tabby-ai-panel-oaisub-<version>.zip` to a GitHub release for manual installs.
