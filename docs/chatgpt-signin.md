@@ -1,18 +1,18 @@
 # Native Sign in with ChatGPT (development preview)
 
-This Windows-only preview uses the official OpenAI Sign in with ChatGPT DevKit at a pinned revision, the Responses API and the existing Tabby terminal tool approval workflow. No Codex CLI, API key or generic proxy is required. The original API-key/local provider remains the default.
+This development preview uses the official OpenAI Sign in with ChatGPT DevKit at a pinned revision, the Responses API and the existing Tabby terminal tool approval workflow. No Codex CLI, API key or generic proxy is required. The original API-key/local provider remains the default.
 
 ## Build and install
 
 ### Prebuilt Windows x64 artifact
 
-Open the [Windows build runs](https://github.com/ragingsheep/tabby-ai-panel/actions), select the latest successful build for `feature/native-chatgpt-signin` and download `tabby-ai-panel-oaisub-windows-x64` under Artifacts. This package includes portable Node.js, so Git, npm and a system Node installation are not required. Windows PowerShell 5.1 is needed for credential encryption.
+Open the [Windows build runs](https://github.com/ragingsheep/tabby-ai-panel/actions), select the latest successful build for `feature/native-chatgpt-signin` and download `tabby-ai-panel-oaisub-windows-x64` under Artifacts. This package includes portable Node.js, so Git, npm and a system Node installation are not required. Credential encryption uses Electron safeStorage (Windows DPAPI, macOS Keychain or a supported Linux keyring). Linux without an encrypted keyring is rejected. The prebuilt package is Windows x64.
 
 Close Tabby. Back up and remove or disable the previous subscription-preview plugin. You can retain the original upstream plugin separately. Extract the ZIP into `%APPDATA%/tabby/plugins/node_modules/` so that `tabby-ai-panel-oaisub/package.json` and `tabby-ai-panel-oaisub/dist/index.js` exist. Restart Tabby.
 
 ### Building from source
 
-Requires Git, Windows PowerShell 5.1 and Node.js 22.12+ on PATH (including when Tabby starts if no portable runtime is bundled). From this branch:
+Requires Git and Node.js 22.12+ on PATH (including when Tabby starts if no portable runtime is bundled). From this branch:
 
     npm ci
     npm run typecheck
@@ -30,12 +30,12 @@ Start a fresh session on a nonprivileged terminal. Ask for a hello message, then
 
 ## Security and limitations
 
-OAuth credentials are stored separately, encrypted with Windows DPAPI CurrentUser. They are not exposed to the Tabby renderer or config.yaml. This does not protect against other processes running as the same user. Terminal context is sent to OpenAI when using the subscription provider. No silent paid-API fallback. Tool calls reach the agent only after a complete, validated response; approvals remain in the existing agent. Account switching cancels active inference but cannot undo already-executed commands. Encrypted reasoning replay is in memory within a turn only. Use model-default reasoning if explicit effort is rejected.
+OAuth credentials are stored in a separate encrypted file under Tabby's userData directory, using Electron safeStorage. The local worker performs OAuth and delegates encryption/decryption through a private pipe to Tabby's Electron bridge. Plaintext is transiently present in the worker and renderer during encryption/decryption; it is not stored in config.yaml or logged. This does not protect against other processes running as the same user. Terminal context is sent to OpenAI when using the subscription provider. No silent paid-API fallback. Tool calls reach the agent only after a complete, validated response; approvals remain in the existing agent. Account switching cancels active inference but cannot undo already-executed commands. Encrypted reasoning replay is in memory within a turn only. Use model-default reasoning if explicit effort is rejected.
 
-Full build, Windows encryption, live OAuth, model inference and live terminal execution have not yet been validated. Do not use on privileged or production machines before testing. This is a development preview, not a production-ready release.
+Automated worker IPC tests do not exercise actual Tabby safeStorage. Live OAuth, OS keyring integration, model inference and terminal execution need testing. Do not use on privileged or production machines before testing. This is a development preview, not a production-ready release.
 
 Official docs: https://developers.openai.com/siwc/quickstart and https://github.com/openai/sign-in-with-chatgpt-devkit
 
 ## Troubleshooting browser sign-in
 
-After browser consent, Tabby must show a connected account with plan usage enabled. Use **Refresh account status** to reload the saved connection without opening the browser. If the earlier preview appeared stuck, fully exit Tabby before replacing the plugin. The saved ChatGPT account is stored outside the plugin and is retained on update. The renamed plugin has its own settings and session directory; the old plugin's settings and sessions are not automatically migrated. Close or disable the old panel before opening the renamed panel; simultaneous sidebar layout is not supported. Do not share authentication URLs, OAuth codes, tokens or credential files when reporting problems. Share only the displayed error text or whether the browser reached the Return to your app page.
+After browser consent, Tabby must show a connected account with plan usage enabled. Use **Refresh account status** to reload the saved connection without opening the browser. If the earlier preview appeared stuck, fully exit Tabby before replacing the plugin. The new encryption format uses a separate credential directory and requires signing in again. The previous DPAPI-encrypted file is left untouched. The renamed plugin has its own settings and session directory; the old plugin's settings and sessions are not automatically migrated. Close or disable the old panel before opening the renamed panel; simultaneous sidebar layout is not supported. Do not share authentication URLs, OAuth codes, tokens or credential files when reporting problems. Share only the displayed error text or whether the browser reached the Return to your app page.

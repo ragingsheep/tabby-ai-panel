@@ -1,18 +1,38 @@
 import { createChatGPT } from '../vendor/siwc-devkit/packages/local/dist/index.js'
-import { execFileSync } from 'node:child_process'
 import { createInterface } from 'node:readline'
 import { join } from 'node:path'
 import { homedir } from 'node:os'
 
-const available = () => process.platform === 'win32'
-function dpapi (encrypt, value) {
-    if (!available()) throw new Error('This preview supports Windows credential encryption only.')
-    const method = encrypt ? 'Protect' : 'Unprotect'
-    const script = "$ErrorActionPreference='Stop'; Add-Type -AssemblyName System.Security; $b=[Convert]::FromBase64String([Console]::In.ReadToEnd()); $r=[Security.Cryptography.ProtectedData]::"+method+"($b,$null,[Security.Cryptography.DataProtectionScope]::CurrentUser); [Console]::Write([Convert]::ToBase64String($r))"
-    const result = execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], { input: Buffer.from(value).toString('base64'), encoding: 'utf8', windowsHide: true, maxBuffer: 8*1024*1024, timeout: 30000, stdio: ['pipe','pipe','pipe'] })
-    return Buffer.from(result.trim(), 'base64')
+// The worker keeps OAuth credentials in its own process. The only encryption
+// implementation is Electron's OS-backed safeStorage bridge, supplied by Tabby.
+// No PowerShell, shell commands, or plaintext credential fallback.
+let nextCryptoId = 0
+const pendingCrypto = new Map()
+function cryptoRequest (op, value) {
+    const id = ++nextCryptoId
+    return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+            pendingCrypto.delete(id)
+            reject(new Error('OS credential encryption request timed out.'))
+        }, 15000)
+        pendingCrypto.set(id, { resolve, reject, timeout })
+        send('crypto', {id, op, value})
+    })
 }
-const client = createChatGPT({ appName: 'Tabby AI Panel-oAIsub (ChatGPT preview)', appId: 'tabby-ai-panel-siwc', redirectPort: 0, storageDir: join(process.env.LOCALAPPDATA || homedir(), 'Tabby AI Panel', 'chatgpt-auth'), credentialEncryption: { id: 'windows-dpapi-current-user-v1', isAvailable: available, encrypt: text => dpapi(true, Buffer.from(text,'utf8')), decrypt: bytes => dpapi(false, bytes).toString('utf8') } })
+const client = createChatGPT({
+    appName: 'Tabby AI Panel-oAIsub (ChatGPT preview)',
+    appId: 'tabby-ai-panel-siwc',
+    redirectPort: 0,
+    // Separate encryption format, retain the old encrypted file unchanged.
+    storageDir: join(process.env.TABBY_SIWC_STORAGE_DIR || join(process.env.LOCALAPPDATA || homedir(), 'Tabby AI Panel'), 'chatgpt-auth-os-v2'),
+    openBrowser: async url => { await cryptoRequest('openBrowser', url) },
+    credentialEncryption: {
+        id: 'electron-safe-storage-v2',
+        isAvailable: async () => Boolean(await cryptoRequest('available')),
+        encrypt: async text => Buffer.from(await cryptoRequest('encrypt', text), 'base64'),
+        decrypt: async bytes => cryptoRequest('decrypt', Buffer.from(bytes).toString('base64'))
+    }
+})
 const send = (type, value) => process.stdout.write(JSON.stringify({type, value})+'\n')
 const controller = new AbortController()
 let started = false
@@ -20,15 +40,32 @@ const input = createInterface({input:process.stdin, crlfDelay:Infinity})
 input.on('line', async line => {
     let req
     try { req = JSON.parse(line) } catch { return }
-    if (req.cancel) { controller.abort(); client.cancelSignIn(); return }
+    if (req.cryptoReply) {
+        const reply = req.cryptoReply
+        const pending = pendingCrypto.get(reply.id)
+        if (!pending) return
+        pendingCrypto.delete(reply.id)
+        clearTimeout(pending.timeout)
+        if (reply.ok) pending.resolve(reply.value)
+        else pending.reject(new Error('Operating system credential encryption or browser launch failed.'))
+        return
+    }
+    if (req.cancel) {
+        controller.abort(); client.cancelSignIn()
+        for (const pending of pendingCrypto.values()) { clearTimeout(pending.timeout); pending.reject(new Error('Cancelled')) }
+        pendingCrypto.clear()
+        return
+    }
     if (started) return
     started = true
     try {
         switch (req.op) {
             case 'selftest': {
-                const original = Buffer.from('tabby-siwc-test', 'utf8')
-                const restored = dpapi(false, dpapi(true, original))
-                if (!original.equals(restored)) throw new Error('Credential encryption round-trip failed.')
+                if (!await cryptoRequest('available')) throw new Error('OS-backed credential encryption unavailable.')
+                const original = 'tabby-siwc-test'
+                const ciphertext = await cryptoRequest('encrypt', original)
+                const restored = await cryptoRequest('decrypt', ciphertext)
+                if (original !== restored) throw new Error('Credential encryption round-trip failed.')
                 send('result', {ok:true}); break
             }
             case 'session': send('result', await client.getSession()); break
@@ -51,7 +88,7 @@ input.on('line', async line => {
         }
     } catch (e) {
         const code = typeof e?.code === 'string' ? e.code : ''
-        const message = e?.name === 'ChatGPTError' ? code+': '+e.message : (e?.message === 'Model not available for the selected ChatGPT account.' ? e.message : 'ChatGPT operation failed. Check sign-in, model availability, network and Windows credential storage.')
+        const message = e?.name === 'ChatGPTError' ? code+': '+e.message : (e?.message === 'Model not available for the selected ChatGPT account.' ? e.message : 'ChatGPT operation failed. Check sign-in, model availability, network and OS-backed credential storage.')
         process.stdout.write(JSON.stringify({type:'error',message})+'\n')
     } finally {
         // The SDK operation has settled (including its credential persistence and lock
