@@ -1,6 +1,6 @@
 # Release readiness and testing
 
-Baseline: the Windows development preview at db9e104 passed the build. A user confirmed the plugin works; this is not full acceptance testing. The earlier flagged artifact passed both configured antivirus checks.
+Baseline: the Windows development preview at db9e104 passed the build. The maintainer confirmed live inference across all available subscription models and login persistence after a Windows restart on 27 November 2026. This is not full acceptance testing. The earlier flagged artifact passed both configured antivirus checks.
 
 ## Automated checks
 
@@ -14,12 +14,13 @@ Run npm ci, npm run typecheck, npm test, npm run build, node --test tests/siwc-w
 | INS-02 | Upgrade current plugin | Settings and conversations retained | Pending |
 | INS-03 | Original plugin installed alongside fork | Distinct settings and shortcuts; only one sidebar open at a time | Pending |
 | AUTH-01 | Sign in, select a model, send a message | Connected and plan usage enabled, reply received | User reported working; retest each release |
-| AUTH-02 | Restart Tabby then Windows | Remains signed in | Pending |
+| AUTH-02 | Restart Tabby then Windows | Remains signed in | Passed (maintainer, Windows, 27 Nov 2026) |
 | AUTH-03 | Cancel sign-in and retry | No stuck UI or orphan worker | Pending |
 | AUTH-04 | Add/switch/sign out accounts | Correct identity/model list; no cross-account request | Pending |
 | AUTH-05 | Natural token expiry and revoked grant | Refresh or actionable reauth error | Pending |
 | LLM-01 | Ask for CONNECTION_SUCCESS without tools | Exact text reply | Pending |
-| LLM-02 | Switch models and reasoning effort | Supported combinations respond; unsupported fail clearly | Pending |
+| LLM-02a | Send a prompt with every available subscription model | All available models respond | Passed (maintainer, Windows, 27 Nov 2026) |
+| LLM-02b | Switch reasoning effort | Supported combinations respond; unsupported fail clearly | Pending |
 | TERM-01 | Ask to echo CI_TEST on nonprivileged disposable host | Approval required; exactly one command | Pending |
 | TERM-02 | Reject echo then stop a pending request | No terminal writes | Pending |
 | TERM-03 | Read-only compare two disposable SSH/local terminals | Correct host attribution | Pending |
